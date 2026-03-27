@@ -1,19 +1,24 @@
-import { SimplePool } from "nostr-tools/pool";
+import {
+	AbstractSimplePool,
+	type AbstractPoolConstructorOptions,
+} from "nostr-tools/abstract-pool";
+import { verifyEvent } from "nostr-tools/wasm";
 import type { Event } from "nostr-tools/pure";
 import { ShortTextNote } from "nostr-tools/kinds";
 import type { Relay as RelayModel } from "../../domain/model/relay";
 
 export class NostrGateway {
-	private pool: SimplePool;
+	private pool: AbstractSimplePool;
 	private relays: RelayModel[];
 
 	constructor(relays: RelayModel[]) {
 		this.relays = relays;
 
-		this.pool = new SimplePool({
+		this.pool = new AbstractSimplePool({
+			verifyEvent: verifyEvent,
 			enablePing: true,
 			enableReconnect: true,
-		});
+		} as AbstractPoolConstructorOptions);
 	}
 
 	async fetchEvents(): Promise<Event[]> {
