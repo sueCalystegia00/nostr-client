@@ -1,14 +1,14 @@
-import { Box, Typography } from "@mui/material";
+import { Avatar, Box, Typography } from "@mui/material";
 import { MessageSquare, Repeat2, Heart } from "lucide-react";
-import type { NostrEvent } from "nostr-tools";
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useSwipeGesture } from "../hooks/useSwipeGesture";
 import { EventService } from "../../domain/service/EventService";
 import { useScrollManager } from "../hooks/useScrollManager";
 import type { TabType } from "../../domain/model/ui";
+import type { EnrichedEvent } from "../../domain/model/nostr";
 
 interface Props {
-	timeline: NostrEvent[];
+	timeline: EnrichedEvent[];
 	currentTab: TabType;
 	readPostIds: Set<string>;
 	markAsRead: (ids: string[]) => void;
@@ -81,7 +81,7 @@ const PostEventItem = React.memo(
 		event,
 		onAction,
 	}: {
-		event: NostrEvent;
+		event: EnrichedEvent;
 		onAction: (msg: string) => void;
 	}) => {
 		const [liked, setLiked] = useState(false);
@@ -109,6 +109,11 @@ const PostEventItem = React.memo(
 
 		const bgColor =
 			translateX > 0 ? "#e0f2fe" : translateX < 0 ? "#dcfce3" : "transparent";
+
+		const displayName =
+			event.profile?.display_name ||
+			event.profile?.name ||
+			`${event.pubkey.slice(0, 8)}...`;
 
 		return (
 			<Box
@@ -194,11 +199,11 @@ const PostEventItem = React.memo(
 						</Box>
 					)}
 
-					{/* <Avatar
-						src={event.authorAvatar}
-						alt={event.authorName}
+					<Avatar
+						src={event.profile?.picture}
+						alt={event.profile?.name}
 						sx={{ width: 48, height: 48, bgcolor: "grey.200" }}
-					/> */}
+					/>
 
 					<Box sx={{ flex: 1, minWidth: 0 }}>
 						<Box
@@ -209,14 +214,14 @@ const PostEventItem = React.memo(
 								mb: 0.5,
 							}}
 						>
-							{/* <Typography
+							<Typography
 								variant='subtitle2'
 								fontWeight='bold'
 								noWrap
 								sx={{ pr: 1 }}
 							>
-								{event.authorName}
-							</Typography> */}
+								{displayName}
+							</Typography>
 							<Typography
 								variant='caption'
 								color='text.secondary'
@@ -289,3 +294,4 @@ const PostEventItem = React.memo(
 		);
 	},
 );
+

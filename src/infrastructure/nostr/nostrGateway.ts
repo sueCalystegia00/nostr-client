@@ -4,7 +4,7 @@ import {
 } from "nostr-tools/abstract-pool";
 import { verifyEvent } from "nostr-tools/wasm";
 import type { Event } from "nostr-tools/pure";
-import { ShortTextNote } from "nostr-tools/kinds";
+import { ShortTextNote, Metadata } from "nostr-tools/kinds";
 import type { Relay as RelayModel } from "../../domain/model/nostr";
 
 export class NostrGateway {
@@ -36,6 +36,39 @@ export class NostrGateway {
 				{
 					authors: undefined,
 					kinds: [ShortTextNote],
+				},
+				{
+					onevent: (event: Event) => {
+						events.push(event);
+					},
+					oneose: () => {
+						clearTimeout(timeoutId);
+						sub.close();
+						resolve(this.normalizeEvents(events));
+					},
+				},
+			);
+		});
+	}
+
+	async fetchUserProfiles(pubkeys: string[]): Promise<Event[]> {
+		if (pubkeys.length === 0) {
+			return [];
+		}
+		const relayUrls = this.relays.map((r) => r.url);
+		const events: Event[] = [];
+
+		return new Promise((resolve) => {
+			const timeoutId = setTimeout(() => {
+				sub.close();
+				resolve(this.normalizeEvents(events));
+			}, 3000);
+
+			const sub = this.pool.subscribeMany(
+				relayUrls,
+				{
+					authors: pubkeys,
+					kinds: [Metadata],
 				},
 				{
 					onevent: (event: Event) => {

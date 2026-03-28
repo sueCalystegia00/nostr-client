@@ -1,12 +1,12 @@
-import type { NostrEvent } from "nostr-tools/pure";
+import type { EnrichedEvent } from "../model/nostr";
 import type { TabType } from "../model/ui";
 
 export class EventService {
 	filterEventsByTab = (
-		events: NostrEvent[],
+		events: EnrichedEvent[],
 		tab: TabType,
 		readIds: Set<string>,
-	): NostrEvent[] => {
+	): EnrichedEvent[] => {
 		switch (tab) {
 			case "unread":
 				return events.filter((e) => !readIds.has(e.id));
