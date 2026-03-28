@@ -101,10 +101,14 @@ const PostEventItem = React.memo(
 			handleLike, // Double Tap
 		);
 
-		const timeAgo = (ts: number) => {
-			const mins = Math.floor((Date.now() - ts) / 60000);
-			if (mins < 60) return `${mins}分前`;
-			return `${Math.floor(mins / 60)}時間前`;
+		const formatTime = (ts: number) => {
+			const date = new Date(ts * 1000);
+			const now = new Date();
+			const diff = (now.getTime() - date.getTime()) / 1000;
+
+			if (diff < 60) return `${Math.floor(diff)}秒前`;
+			if (diff < 3600) return `${Math.floor(diff / 60)}分前`;
+			return date.toLocaleDateString() + " " + date.toLocaleTimeString();
 		};
 
 		const bgColor =
@@ -227,7 +231,7 @@ const PostEventItem = React.memo(
 								color='text.secondary'
 								sx={{ whiteSpace: "nowrap" }}
 							>
-								{timeAgo(event.created_at)}
+								{formatTime(event.created_at)}
 							</Typography>
 						</Box>
 						<Typography
@@ -294,4 +298,3 @@ const PostEventItem = React.memo(
 		);
 	},
 );
-
