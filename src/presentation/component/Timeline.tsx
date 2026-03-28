@@ -1,20 +1,291 @@
-import type { Event } from "nostr-tools/pure";
+import { Box, Typography } from "@mui/material";
+import { MessageSquare, Repeat2, Heart } from "lucide-react";
+import type { NostrEvent } from "nostr-tools";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { useSwipeGesture } from "../hooks/useSwipeGesture";
+import { EventService } from "../../domain/service/EventService";
+import { useScrollManager } from "../hooks/useScrollManager";
+import type { TabType } from "../../domain/model/ui";
 
 interface Props {
-	timeline: Event[];
+	timeline: NostrEvent[];
+	currentTab: TabType;
+	readPostIds: Set<string>;
+	markAsRead: (ids: string[]) => void;
+	setToastMessage: (msg: string) => void;
 }
 
-export const Timeline = ({ timeline }: Props) => {
+export const Timeline = ({
+	timeline,
+	currentTab,
+	readPostIds,
+	markAsRead,
+	setToastMessage,
+}: Props) => {
+	const { containerRef, handleScroll } = useScrollManager(
+		currentTab,
+		markAsRead,
+	);
+
+	// 初回マウント時にスクロール判定を発火
+	useEffect(() => {
+		handleScroll();
+	}, [handleScroll]);
+
+	const eventService = new EventService();
+	const filteredEvents = useMemo(
+		() => eventService.filterEventsByTab(timeline, currentTab, readPostIds),
+		[timeline, currentTab, readPostIds],
+	);
+
 	return (
-		<div>
-			<h1>Timeline</h1>
-			<ul>
-				{timeline.map((event) => (
-					<li key={event.id}>
-						<p>{event.content}</p>
-					</li>
-				))}
-			</ul>
-		</div>
+		<Box
+			component='main'
+			ref={containerRef}
+			onScroll={handleScroll}
+			sx={{
+				flex: 1,
+				overflowY: "auto",
+				overflowX: "hidden",
+				scrollBehavior: "smooth",
+			}}
+		>
+			<Box
+				sx={{
+					mx: "auto",
+					bgcolor: "background.paper",
+					minHeight: "100%",
+				}}
+			>
+				{filteredEvents.length === 0 ? (
+					<Box sx={{ p: 4, textAlign: "center", color: "text.secondary" }}>
+						表示する投稿がありません。
+					</Box>
+				) : (
+					filteredEvents.map((event) => (
+						<PostEventItem
+							key={event.id}
+							event={event}
+							onAction={setToastMessage}
+						/>
+					))
+				)}
+			</Box>
+		</Box>
 	);
 };
+
+/** 投稿1件を表示するコンポーネント */
+const PostEventItem = React.memo(
+	({
+		event,
+		onAction,
+	}: {
+		event: NostrEvent;
+		onAction: (msg: string) => void;
+	}) => {
+		const [liked, setLiked] = useState(false);
+		const [showLikeAnim, setShowLikeAnim] = useState(false);
+
+		const handleLike = useCallback(() => {
+			setLiked(true);
+			setShowLikeAnim(true);
+			onAction("いいねしました");
+			setTimeout(() => setShowLikeAnim(false), 1000);
+		}, [onAction]);
+
+		// ロジックをフックに委譲
+		const { translateX, isDragging, handlers } = useSwipeGesture(
+			() => onAction("リポストしました"), // Left Swipe
+			() => onAction("返信画面を開きます"), // Right Swipe
+			handleLike, // Double Tap
+		);
+
+		const timeAgo = (ts: number) => {
+			const mins = Math.floor((Date.now() - ts) / 60000);
+			if (mins < 60) return `${mins}分前`;
+			return `${Math.floor(mins / 60)}時間前`;
+		};
+
+		const bgColor =
+			translateX > 0 ? "#e0f2fe" : translateX < 0 ? "#dcfce3" : "transparent";
+
+		return (
+			<Box
+				className='post-item'
+				data-post-id={event.id}
+				sx={{
+					position: "relative",
+					overflow: "hidden",
+					borderBottom: 1,
+					borderColor: "divider",
+					bgcolor: bgColor,
+				}}
+			>
+				{/* 背景アイコン (返信・リポスト) */}
+				<Box
+					sx={{
+						position: "absolute",
+						left: 16,
+						top: "50%",
+						transform: "translateY(-50%)",
+						color: "primary.main",
+						opacity: translateX > 20 ? Math.min((translateX - 20) / 40, 1) : 0,
+						display: "flex",
+						alignItems: "center",
+					}}
+				>
+					<MessageSquare size={24} />
+				</Box>
+				<Box
+					sx={{
+						position: "absolute",
+						right: 16,
+						top: "50%",
+						transform: "translateY(-50%)",
+						color: "#22c55e",
+						opacity:
+							translateX < -20
+								? Math.min((Math.abs(translateX) - 20) / 40, 1)
+								: 0,
+						display: "flex",
+						alignItems: "center",
+					}}
+				>
+					<Repeat2 size={24} />
+				</Box>
+
+				{/* コンテンツ本体 */}
+				<Box
+					component='article'
+					{...handlers}
+					sx={{
+						p: 2,
+						bgcolor: "background.paper",
+						display: "flex",
+						gap: 2,
+						position: "relative",
+						zIndex: 1,
+						userSelect: "none",
+						touchAction: "pan-y",
+						transform: `translateX(${translateX}px)`,
+						transition: isDragging ? "none" : "transform 0.2s ease-out",
+					}}
+				>
+					{/* いいねアニメーション */}
+					{showLikeAnim && (
+						<Box
+							sx={{
+								position: "absolute",
+								inset: 0,
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								pointerEvents: "none",
+								zIndex: 2,
+								animation: "ping 1s cubic-bezier(0, 0, 0.2, 1) forwards",
+								"@keyframes ping": {
+									"0%": { transform: "scale(1)", opacity: 0.8 },
+									"75%, 100%": { transform: "scale(2.5)", opacity: 0 },
+								},
+							}}
+						>
+							<Heart size={80} color='#ef4444' fill='#ef4444' />
+						</Box>
+					)}
+
+					{/* <Avatar
+						src={event.authorAvatar}
+						alt={event.authorName}
+						sx={{ width: 48, height: 48, bgcolor: "grey.200" }}
+					/> */}
+
+					<Box sx={{ flex: 1, minWidth: 0 }}>
+						<Box
+							sx={{
+								display: "flex",
+								justifyContent: "space-between",
+								alignItems: "baseline",
+								mb: 0.5,
+							}}
+						>
+							{/* <Typography
+								variant='subtitle2'
+								fontWeight='bold'
+								noWrap
+								sx={{ pr: 1 }}
+							>
+								{event.authorName}
+							</Typography> */}
+							<Typography
+								variant='caption'
+								color='text.secondary'
+								sx={{ whiteSpace: "nowrap" }}
+							>
+								{timeAgo(event.created_at)}
+							</Typography>
+						</Box>
+						<Typography
+							variant='body2'
+							color='text.primary'
+							sx={{
+								wordBreak: "break-word",
+								whiteSpace: "pre-wrap",
+								lineHeight: 1.6,
+							}}
+						>
+							{event.content}
+						</Typography>
+
+						<Box
+							sx={{
+								display: "flex",
+								alignItems: "center",
+								gap: 3,
+								mt: 1.5,
+								color: "text.disabled",
+							}}
+						>
+							<Box
+								sx={{
+									display: "flex",
+									alignItems: "center",
+									cursor: "pointer",
+									"&:hover": { color: "primary.main" },
+								}}
+							>
+								<MessageSquare size={16} />
+							</Box>
+							<Box
+								sx={{
+									display: "flex",
+									alignItems: "center",
+									cursor: "pointer",
+									"&:hover": { color: "#22c55e" },
+								}}
+							>
+								<Repeat2 size={16} />
+							</Box>
+							<Box
+								onClick={(e) => {
+									e.stopPropagation();
+									setLiked(!liked);
+									if (!liked) onAction("いいねしました");
+								}}
+								sx={{
+									display: "flex",
+									alignItems: "center",
+									cursor: "pointer",
+									color: liked ? "error.main" : "inherit",
+									"&:hover": { color: "error.main" },
+								}}
+							>
+								<Heart size={16} fill={liked ? "currentColor" : "none"} />
+							</Box>
+						</Box>
+					</Box>
+				</Box>
+			</Box>
+		);
+	},
+);
