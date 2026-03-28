@@ -1,6 +1,6 @@
 import { NostrService } from "../../domain/service/nostrService";
 import { NostrGateway } from "../../infrastructure/nostr/nostrGateway";
-import type { Relay } from "../../domain/model/relay";
+import type { Relay } from "../../domain/model/nostr";
 
 export class PostUsecase {
 	private nostrService: NostrService;

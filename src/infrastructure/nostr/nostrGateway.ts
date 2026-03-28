@@ -5,7 +5,7 @@ import {
 import { verifyEvent } from "nostr-tools/wasm";
 import type { Event } from "nostr-tools/pure";
 import { ShortTextNote } from "nostr-tools/kinds";
-import type { Relay as RelayModel } from "../../domain/model/relay";
+import type { Relay as RelayModel } from "../../domain/model/nostr";
 
 export class NostrGateway {
 	private pool: AbstractSimplePool;

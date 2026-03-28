@@ -5,3 +5,8 @@ export type PrivateKey = {
 export type PublicKey = {
 	value: string;
 };
+
+export interface Relay {
+	url: string;
+}
+

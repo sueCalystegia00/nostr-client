@@ -1,5 +1,5 @@
 import type { Event } from "nostr-tools/pure";
-import type { Relay } from "../../domain/model/relay";
+import type { Relay } from "../../domain/model/nostr";
 import { NostrGateway } from "../../infrastructure/nostr/nostrGateway";
 
 export class TimelineUsecase {

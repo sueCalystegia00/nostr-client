@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PostUsecase } from "../../application/usecase/postUsecase";
-import type { Relay } from "../../domain/model/relay";
+import type { Relay } from "../../domain/model/nostr";
 
 const relays: Relay[] = [{ url: "wss://relay.damus.io" }];
 
@@ -28,7 +28,7 @@ export const PostForm = () => {
 				onChange={(e) => setContent(e.target.value)}
 				placeholder="What's on your mind?"
 			/>
-			<button type="submit">Post</button>
+			<button type='submit'>Post</button>
 		</form>
 	);
 };

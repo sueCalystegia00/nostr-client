@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import type { Event } from "nostr-tools/pure";
 import { TimelineUsecase } from "../../application/usecase/timelineUsecase";
-import type { Relay } from "../../domain/model/relay";
+import type { Relay } from "../../domain/model/nostr";
 
 const relays: Relay[] = [{ url: "wss://relay-jp.nostr.wirednet.jp" }];
 
