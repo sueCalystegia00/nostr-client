@@ -15,4 +15,11 @@ export class TimelineUsecase {
 		const relays = await this.nostrRelayService.resolveCurrentUserRelays();
 		return await this.nostrEventService.fetchTimeline(relays);
 	}
+
+	async subscribeTimeline(
+		onEvent: (post: NostrPost) => void,
+	): Promise<() => void> {
+		const relays = await this.nostrRelayService.resolveCurrentUserRelays();
+		return this.nostrEventService.subscribeTimeline(relays, onEvent);
+	}
 }

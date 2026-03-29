@@ -48,6 +48,30 @@ export class NostrPostEventRepository {
 		});
 	}
 
+	subscribeEvents(
+		relays: RelayModel[],
+		onEvent: (event: Event) => void,
+	): () => void {
+		const relayUrls = relays.map((r) => r.url);
+
+		const sub = this.pool.subscribeMany(
+			relayUrls,
+			{
+				authors: undefined,
+				kinds: [ShortTextNote],
+			},
+			{
+				onevent: (event: Event) => {
+					onEvent(event);
+				},
+			},
+		);
+
+		return () => {
+			sub.close();
+		};
+	}
+
 	async fetchUserProfiles(
 		pubkeys: string[],
 		relays: RelayModel[],
@@ -78,6 +102,50 @@ export class NostrPostEventRepository {
 						clearTimeout(timeoutId);
 						sub.close();
 						resolve(this.normalizeEvents(events));
+					},
+				},
+			);
+		});
+	}
+
+	async fetchUserProfile(
+		pubkey: string,
+		relays: RelayModel[],
+	): Promise<Event | undefined> {
+		const relayUrls = relays.map((r) => r.url);
+
+		return new Promise((resolve) => {
+			let resolved = false;
+			const timeoutId = setTimeout(() => {
+				if (!resolved) {
+					resolved = true;
+					sub.close();
+					resolve(undefined);
+				}
+			}, 3000);
+
+			const sub = this.pool.subscribeMany(
+				relayUrls,
+				{
+					authors: [pubkey],
+					kinds: [Metadata],
+				},
+				{
+					onevent: (event: Event) => {
+						if (!resolved) {
+							resolved = true;
+							clearTimeout(timeoutId);
+							sub.close();
+							resolve(event);
+						}
+					},
+					oneose: () => {
+						if (!resolved) {
+							resolved = true;
+							clearTimeout(timeoutId);
+							sub.close();
+							resolve(undefined);
+						}
 					},
 				},
 			);
