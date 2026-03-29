@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useMemo } from "react";
+import type React from "react";
+import { createContext, useContext, useMemo } from "react";
 import { PostUsecase } from "../../application/usecase/postUsecase";
 import { TimelineUsecase } from "../../application/usecase/timelineUsecase";
 import { NostrEventService } from "../../domain/service/nostrEventService";

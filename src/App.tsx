@@ -6,11 +6,11 @@ import {
 	ThemeProvider,
 } from "@mui/material";
 import { useState } from "react";
-import type { TabType } from "./presentation/model/ui";
 import AppHeader from "./presentation/component/AppHeader";
-import { Timeline } from "./presentation/component/Timeline";
+import { TimelineContainer as Timeline } from "./presentation/component/timeline/TimelineContainer";
 import { useReadReceipts } from "./presentation/hooks/useReadReceipts";
 import { useTimeline } from "./presentation/hooks/useTimeline";
+import type { TabType } from "./presentation/model/ui";
 
 // --- MUIテーマ定義 ---
 const theme = createTheme({

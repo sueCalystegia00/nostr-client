@@ -2,8 +2,8 @@ import { setNostrWasm } from "nostr-tools/wasm";
 import { initNostrWasm } from "nostr-wasm";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { DIProvider } from "./presentation/context/diContext";
 import App from "./App";
+import { DIProvider } from "./presentation/context/diContext";
 import "./style.css";
 
 const rootElement = document.getElementById("root");

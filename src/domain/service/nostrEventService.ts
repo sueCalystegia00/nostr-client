@@ -1,5 +1,3 @@
-import type { INos2xRepository } from "../repository/INos2xRepository";
-import type { INostrPostEventRepository } from "../repository/INostrPostEventRepository";
 import type {
 	NostrPost,
 	RelayConfig,
@@ -8,6 +6,8 @@ import type {
 	UnsignedEvent,
 	UserProfile,
 } from "../model/nostr";
+import type { INos2xRepository } from "../repository/INos2xRepository";
+import type { INostrPostEventRepository } from "../repository/INostrPostEventRepository";
 
 export class NostrEventService {
 	private nos2xRepository: INos2xRepository;

@@ -1,6 +1,6 @@
+import type { RelayConfig } from "../model/nostr";
 import type { INos2xRepository } from "../repository/INos2xRepository";
 import type { INostrRelayRepository } from "../repository/INostrRelayRepository";
-import type { RelayConfig } from "../model/nostr";
 import { RelayUrl } from "../valueObject/RelayUrl";
 
 export class NostrRelayService {

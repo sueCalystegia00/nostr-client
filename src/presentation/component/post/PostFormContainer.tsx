@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useDI } from "../context/diContext";
+import { useDI } from "../../context/diContext";
+import { PostFormPresenter } from "./PostFormPresenter";
 
-export const PostForm = () => {
+export const PostFormContainer = () => {
 	const [content, setContent] = useState("");
 	const { postUsecase } = useDI();
 
@@ -19,13 +20,10 @@ export const PostForm = () => {
 	};
 
 	return (
-		<form onSubmit={handleSubmit}>
-			<textarea
-				value={content}
-				onChange={(e) => setContent(e.target.value)}
-				placeholder="What's on your mind?"
-			/>
-			<button type="submit">Post</button>
-		</form>
+		<PostFormPresenter
+			content={content}
+			onChange={setContent}
+			onSubmit={handleSubmit}
+		/>
 	);
 };
