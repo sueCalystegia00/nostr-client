@@ -1,6 +1,7 @@
 import { Avatar, Box, Typography } from "@mui/material";
 import { Heart, MessageSquare, Repeat2 } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { PostUsecase } from "../../application/usecase/postUsecase";
 import type { NostrPost } from "../../domain/model/nostr";
 import type { TabType } from "../../domain/model/ui";
 import { useScrollManager } from "../hooks/useScrollManager";
@@ -44,7 +45,7 @@ export const Timeline = ({
 
 	return (
 		<Box
-			component='main'
+			component="main"
 			ref={containerRef}
 			onScroll={handleScroll}
 			sx={{
@@ -91,12 +92,21 @@ const PostEventItem = React.memo(
 		const [liked, setLiked] = useState(false);
 		const [showLikeAnim, setShowLikeAnim] = useState(false);
 
-		const handleLike = useCallback(() => {
-			setLiked(true);
-			setShowLikeAnim(true);
-			onAction("いいねしました");
-			setTimeout(() => setShowLikeAnim(false), 1000);
-		}, [onAction]);
+		const postUsecase = useMemo(() => new PostUsecase(), []);
+
+		const handleLike = useCallback(async () => {
+			if (liked) return;
+			try {
+				await postUsecase.react(event.id, event.pubkey);
+				setLiked(true);
+				setShowLikeAnim(true);
+				onAction("いいねしました");
+				setTimeout(() => setShowLikeAnim(false), 1000);
+			} catch (e) {
+				console.error("Failed to react:", e);
+				onAction("いいねに失敗しました");
+			}
+		}, [event.id, event.pubkey, liked, onAction, postUsecase]);
 
 		// ロジックをフックに委譲
 		const { translateX, isDragging, handlers } = useSwipeGesture(
@@ -125,7 +135,7 @@ const PostEventItem = React.memo(
 
 		return (
 			<Box
-				className='post-item'
+				className="post-item"
 				data-post-id={event.id}
 				sx={{
 					position: "relative",
@@ -170,7 +180,7 @@ const PostEventItem = React.memo(
 
 				{/* コンテンツ本体 */}
 				<Box
-					component='article'
+					component="article"
 					{...handlers}
 					sx={{
 						p: 2,
@@ -203,7 +213,7 @@ const PostEventItem = React.memo(
 								},
 							}}
 						>
-							<Heart size={80} color='#ef4444' fill='#ef4444' />
+							<Heart size={80} color="#ef4444" fill="#ef4444" />
 						</Box>
 					)}
 
@@ -223,24 +233,24 @@ const PostEventItem = React.memo(
 							}}
 						>
 							<Typography
-								variant='subtitle2'
-								fontWeight='bold'
+								variant="subtitle2"
+								fontWeight="bold"
 								noWrap
 								sx={{ pr: 1 }}
 							>
 								{displayName}
 							</Typography>
 							<Typography
-								variant='caption'
-								color='text.secondary'
+								variant="caption"
+								color="text.secondary"
 								sx={{ whiteSpace: "nowrap" }}
 							>
 								{formatTime(event.created_at)}
 							</Typography>
 						</Box>
 						<Typography
-							variant='body2'
-							color='text.primary'
+							variant="body2"
+							color="text.primary"
 							sx={{
 								wordBreak: "break-word",
 								whiteSpace: "pre-wrap",
@@ -282,8 +292,7 @@ const PostEventItem = React.memo(
 							<Box
 								onClick={(e) => {
 									e.stopPropagation();
-									setLiked(!liked);
-									if (!liked) onAction("いいねしました");
+									handleLike();
 								}}
 								sx={{
 									display: "flex",

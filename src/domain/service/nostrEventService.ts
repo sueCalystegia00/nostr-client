@@ -57,6 +57,23 @@ export class NostrEventService {
 		await this.nostrPostEventRepository.postEvent(signedEvent, relaysModels);
 	}
 
+	async react(
+		targetEventId: string,
+		targetPubkey: string,
+		relays: RelayConfig[],
+	): Promise<void> {
+		const publicKey = await this.nos2xRepository.getPublicKey();
+		const unsignedEvent = this.createUnsignedReactionEvent(
+			publicKey,
+			targetEventId,
+			targetPubkey,
+		);
+		const signedEvent = await this.nos2xRepository.signEvent(unsignedEvent);
+
+		const relaysModels = this.getRelaysToUse(relays, "write");
+		await this.nostrPostEventRepository.postEvent(signedEvent, relaysModels);
+	}
+
 	private getRelaysToUse(
 		relays: RelayConfig[],
 		marker: RelayMarker,
@@ -75,6 +92,23 @@ export class NostrEventService {
 			created_at: Math.floor(Date.now() / 1000),
 			tags: [],
 			content: content,
+			pubkey: publicKey,
+		};
+	}
+
+	private createUnsignedReactionEvent(
+		publicKey: string,
+		targetEventId: string,
+		targetPubkey: string,
+	): UnsignedEvent {
+		return {
+			kind: 7,
+			created_at: Math.floor(Date.now() / 1000),
+			tags: [
+				["e", targetEventId],
+				["p", targetPubkey],
+			],
+			content: "+",
 			pubkey: publicKey,
 		};
 	}

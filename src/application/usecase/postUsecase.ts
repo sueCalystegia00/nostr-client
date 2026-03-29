@@ -14,4 +14,13 @@ export class PostUsecase {
 		const relays = await this.nostrRelayService.resolveCurrentUserRelays();
 		return await this.nostrEventService.post(content, relays);
 	}
+
+	async react(targetEventId: string, targetPubkey: string): Promise<void> {
+		const relays = await this.nostrRelayService.resolveCurrentUserRelays();
+		return await this.nostrEventService.react(
+			targetEventId,
+			targetPubkey,
+			relays,
+		);
+	}
 }
