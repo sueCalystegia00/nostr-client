@@ -4,6 +4,7 @@ import { RelayUrl } from "../../domain/valueObject/RelayUrl";
 
 export class Nos2xRepository {
 	async getPublicKey(): Promise<string> {
+		await this.waitLoadingNos2xExtension();
 		if (window.nostr) {
 			return await window.nostr.getPublicKey();
 		}
@@ -11,8 +12,10 @@ export class Nos2xRepository {
 	}
 
 	public async getLocalRelays(): Promise<RelayConfig[]> {
-		if (!window.nostr) {
-			throw new Error("nos2x is not installed.");
+		await this.waitLoadingNos2xExtension();
+
+		if (!window.nostr?.getRelays) {
+			return [];
 		}
 
 		try {
@@ -20,7 +23,7 @@ export class Nos2xRepository {
 			if (!extensionRelays) return [];
 
 			const parsedRelays: RelayConfig[] = Object.entries(extensionRelays).map(
-				([url, config]: [string, any]) => {
+				([url, config]: [string, { read: boolean; write: boolean }]) => {
 					let marker: RelayMarker = "both";
 					if (config.read && !config.write) marker = "read";
 					if (!config.read && config.write) marker = "write";
@@ -36,9 +39,26 @@ export class Nos2xRepository {
 	}
 
 	async signEvent(event: UnsignedEvent): Promise<NostrEvent> {
+		await this.waitLoadingNos2xExtension();
 		if (window.nostr) {
 			return await window.nostr.signEvent(event);
 		}
 		throw new Error("nos2x is not installed.");
+	}
+
+	private async waitLoadingNos2xExtension(timeoutMs = 1000): Promise<void> {
+		if (window.nostr) return;
+		return new Promise((resolve) => {
+			const interval = setInterval(() => {
+				if (window.nostr) {
+					clearInterval(interval);
+					resolve();
+				}
+			}, 100);
+			setTimeout(() => {
+				clearInterval(interval);
+				resolve();
+			}, timeoutMs);
+		});
 	}
 }

@@ -44,7 +44,7 @@ export const Timeline = ({
 
 	return (
 		<Box
-			component='main'
+			component="main"
 			ref={containerRef}
 			onScroll={handleScroll}
 			sx={{
@@ -125,7 +125,7 @@ const PostEventItem = React.memo(
 
 		return (
 			<Box
-				className='post-item'
+				className="post-item"
 				data-post-id={event.id}
 				sx={{
 					position: "relative",
@@ -170,7 +170,7 @@ const PostEventItem = React.memo(
 
 				{/* コンテンツ本体 */}
 				<Box
-					component='article'
+					component="article"
 					{...handlers}
 					sx={{
 						p: 2,
@@ -203,7 +203,7 @@ const PostEventItem = React.memo(
 								},
 							}}
 						>
-							<Heart size={80} color='#ef4444' fill='#ef4444' />
+							<Heart size={80} color="#ef4444" fill="#ef4444" />
 						</Box>
 					)}
 
@@ -223,24 +223,24 @@ const PostEventItem = React.memo(
 							}}
 						>
 							<Typography
-								variant='subtitle2'
-								fontWeight='bold'
+								variant="subtitle2"
+								fontWeight="bold"
 								noWrap
 								sx={{ pr: 1 }}
 							>
 								{displayName}
 							</Typography>
 							<Typography
-								variant='caption'
-								color='text.secondary'
+								variant="caption"
+								color="text.secondary"
 								sx={{ whiteSpace: "nowrap" }}
 							>
 								{formatTime(event.created_at)}
 							</Typography>
 						</Box>
 						<Typography
-							variant='body2'
-							color='text.primary'
+							variant="body2"
+							color="text.primary"
 							sx={{
 								wordBreak: "break-word",
 								whiteSpace: "pre-wrap",
