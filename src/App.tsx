@@ -1,16 +1,16 @@
-import { useState } from "react";
 import {
-	ThemeProvider,
-	createTheme,
-	CssBaseline,
 	Box,
+	CssBaseline,
+	createTheme,
 	Snackbar,
+	ThemeProvider,
 } from "@mui/material";
-import { useTimeline } from "./presentation/hooks/useTimeline";
+import { useState } from "react";
 import type { TabType } from "./domain/model/ui";
 import AppHeader from "./presentation/component/AppHeader";
-import { useReadReceipts } from "./presentation/hooks/useReadReceipts";
 import { Timeline } from "./presentation/component/Timeline";
+import { useReadReceipts } from "./presentation/hooks/useReadReceipts";
+import { useTimeline } from "./presentation/hooks/useTimeline";
 
 // --- MUIテーマ定義 ---
 const theme = createTheme({

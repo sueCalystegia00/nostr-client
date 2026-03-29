@@ -1,3 +1,5 @@
+import type { RelayUrl } from "../valueObject/RelayUrl";
+
 export type PrivateKey = {
 	value: string;
 };
@@ -6,8 +8,17 @@ export type PublicKey = {
 	value: string;
 };
 
-export interface Relay {
+export interface RelayModel {
 	url: string;
+}
+
+// NIP-65およびNIP-07に基づくパーミッションマーカーを定義する型
+export type RelayMarker = "read" | "write" | "both";
+
+// リレーの接続情報を示すエンティティ
+export interface RelayConfig {
+	url: RelayUrl;
+	marker: RelayMarker;
 }
 
 export type NostrEvent = {

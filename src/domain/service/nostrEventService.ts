@@ -1,25 +1,33 @@
 import { Nos2xRepository } from "../../infrastructure/nostr/nos2xRepository";
-import { NostrGateway } from "../../infrastructure/nostr/nostrGateway";
+import { NostrPostEventRepository } from "../../infrastructure/nostr/nostrPostEventRepository";
 import type {
 	NostrPost,
-	Relay,
+	RelayConfig,
+	RelayMarker,
+	RelayModel,
 	UnsignedEvent,
 	UserProfile,
 } from "../model/nostr";
 
-export class NostrService {
+export class NostrEventService {
 	private nos2xRepository: Nos2xRepository;
-	private nostrGateway: NostrGateway;
+	private nostrPostEventRepository: NostrPostEventRepository;
 
-	constructor(relays: Relay[]) {
+	constructor() {
 		this.nos2xRepository = new Nos2xRepository();
-		this.nostrGateway = new NostrGateway(relays);
+		this.nostrPostEventRepository = new NostrPostEventRepository();
 	}
 
-	async fetchTimeline(): Promise<NostrPost[]> {
-		const events = await this.nostrGateway.fetchEvents();
+	async fetchTimeline(relays: RelayConfig[]): Promise<NostrPost[]> {
+		const relaysModels = this.getRelaysToUse(relays, "read");
+		const events =
+			await this.nostrPostEventRepository.fetchEvents(relaysModels);
+
 		const pubkeys = [...new Set(events.map((e) => e.pubkey))];
-		const profileEvents = await this.nostrGateway.fetchUserProfiles(pubkeys);
+		const profileEvents = await this.nostrPostEventRepository.fetchUserProfiles(
+			pubkeys,
+			relaysModels,
+		);
 
 		const profiles = new Map<string, UserProfile>();
 		for (const profileEvent of profileEvents) {
@@ -40,11 +48,22 @@ export class NostrService {
 		});
 	}
 
-	async post(content: string): Promise<void> {
+	async post(content: string, relays: RelayConfig[]): Promise<void> {
 		const publicKey = await this.nos2xRepository.getPublicKey();
 		const unsignedEvent = this.createUnsignedEvent(publicKey, content);
 		const signedEvent = await this.nos2xRepository.signEvent(unsignedEvent);
-		await this.nostrGateway.postEvent(signedEvent);
+
+		const relaysModels = this.getRelaysToUse(relays, "write");
+		await this.nostrPostEventRepository.postEvent(signedEvent, relaysModels);
+	}
+
+	private getRelaysToUse(
+		relays: RelayConfig[],
+		marker: RelayMarker,
+	): RelayModel[] {
+		return relays
+			.filter((r) => r.marker === marker || r.marker === "both")
+			.map((r) => ({ url: r.url.value }));
 	}
 
 	private createUnsignedEvent(

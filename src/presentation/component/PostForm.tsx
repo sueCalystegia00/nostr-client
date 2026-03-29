@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { PostUsecase } from "../../application/usecase/postUsecase";
-import type { Relay } from "../../domain/model/nostr";
-
-const relays: Relay[] = [{ url: "wss://relay.damus.io" }];
 
 export const PostForm = () => {
 	const [content, setContent] = useState("");
-	const postUsecase = new PostUsecase(relays);
+	const postUsecase = new PostUsecase();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -28,7 +25,7 @@ export const PostForm = () => {
 				onChange={(e) => setContent(e.target.value)}
 				placeholder="What's on your mind?"
 			/>
-			<button type='submit'>Post</button>
+			<button type="submit">Post</button>
 		</form>
 	);
 };

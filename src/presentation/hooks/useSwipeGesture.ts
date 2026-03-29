@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 
 /** スワイプ・ドラッグのジェスチャーを管理するフック */
 export const useSwipeGesture = (

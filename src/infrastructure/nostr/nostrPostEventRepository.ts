@@ -1,19 +1,16 @@
 import {
-	AbstractSimplePool,
 	type AbstractPoolConstructorOptions,
+	AbstractSimplePool,
 } from "nostr-tools/abstract-pool";
-import { verifyEvent } from "nostr-tools/wasm";
+import { Metadata, ShortTextNote } from "nostr-tools/kinds";
 import type { Event } from "nostr-tools/pure";
-import { ShortTextNote, Metadata } from "nostr-tools/kinds";
-import type { Relay as RelayModel } from "../../domain/model/nostr";
+import { verifyEvent } from "nostr-tools/wasm";
+import type { RelayModel } from "../../domain/model/nostr";
 
-export class NostrGateway {
+export class NostrPostEventRepository {
 	private pool: AbstractSimplePool;
-	private relays: RelayModel[];
 
-	constructor(relays: RelayModel[]) {
-		this.relays = relays;
-
+	constructor() {
 		this.pool = new AbstractSimplePool({
 			verifyEvent: verifyEvent,
 			enablePing: true,
@@ -21,8 +18,8 @@ export class NostrGateway {
 		} as AbstractPoolConstructorOptions);
 	}
 
-	async fetchEvents(): Promise<Event[]> {
-		const relayUrls = this.relays.map((r) => r.url);
+	async fetchEvents(relays: RelayModel[]): Promise<Event[]> {
+		const relayUrls = relays.map((r) => r.url);
 		const events: Event[] = [];
 
 		return new Promise((resolve) => {
@@ -51,11 +48,14 @@ export class NostrGateway {
 		});
 	}
 
-	async fetchUserProfiles(pubkeys: string[]): Promise<Event[]> {
+	async fetchUserProfiles(
+		pubkeys: string[],
+		relays: RelayModel[],
+	): Promise<Event[]> {
 		if (pubkeys.length === 0) {
 			return [];
 		}
-		const relayUrls = this.relays.map((r) => r.url);
+		const relayUrls = relays.map((r) => r.url);
 		const events: Event[] = [];
 
 		return new Promise((resolve) => {
@@ -84,8 +84,8 @@ export class NostrGateway {
 		});
 	}
 
-	async postEvent(event: Event): Promise<void> {
-		const relayUrls = this.relays.map((r) => r.url);
+	async postEvent(event: Event, relays: RelayModel[]): Promise<void> {
+		const relayUrls = relays.map((r) => r.url);
 
 		try {
 			await Promise.any(this.pool.publish(relayUrls, event));

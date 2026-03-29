@@ -1,12 +1,10 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { TimelineUsecase } from "../../application/usecase/timelineUsecase";
-import type { NostrPost, Relay } from "../../domain/model/nostr";
-
-const relays: Relay[] = [{ url: "wss://relay-jp.nostr.wirednet.jp" }];
+import type { NostrPost } from "../../domain/model/nostr";
 
 export const useTimeline = () => {
 	const [timeline, setTimeline] = useState<NostrPost[]>([]);
-	const timelineUsecase = new TimelineUsecase(relays);
+	const timelineUsecase = new TimelineUsecase();
 
 	useEffect(() => {
 		const fetchTimeline = async () => {

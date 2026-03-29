@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useLayoutEffect } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import type { TabType } from "../../domain/model/ui";
 
 /** スクロール監視と位置の復元を管理するフック */

@@ -1,14 +1,17 @@
-import { NostrService } from "../../domain/service/nostrService";
-import type { Relay } from "../../domain/model/nostr";
+import { NostrEventService } from "../../domain/service/nostrEventService";
+import { NostrRelayService } from "../../domain/service/nostrRelayService";
 
 export class PostUsecase {
-	private nostrService: NostrService;
+	private nostrEventService: NostrEventService;
+	private nostrRelayService: NostrRelayService;
 
-	constructor(relays: Relay[]) {
-		this.nostrService = new NostrService(relays);
+	constructor() {
+		this.nostrEventService = new NostrEventService();
+		this.nostrRelayService = new NostrRelayService();
 	}
 
 	async post(content: string): Promise<void> {
-		return await this.nostrService.post(content);
+		const relays = await this.nostrRelayService.resolveCurrentUserRelays();
+		return await this.nostrEventService.post(content, relays);
 	}
 }
