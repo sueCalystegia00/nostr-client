@@ -73,7 +73,7 @@ export const useScrollManager = (
 		} else if (containerRef.current) {
 			containerRef.current.scrollTop = 0;
 		}
-	}, [currentTab]);
+	}, [currentTab, lastViewedIds]);
 
 	return { containerRef, itemsRef, registerItem, handleScroll };
 };

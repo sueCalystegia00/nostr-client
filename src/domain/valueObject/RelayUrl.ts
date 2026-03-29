@@ -43,7 +43,7 @@ export class RelayUrl {
 				normalized = normalized.slice(0, -1);
 			}
 			return normalized;
-		} catch (e) {
+		} catch (_e) {
 			throw new Error(`Invalid Relay URL format: ${url}`);
 		}
 	}

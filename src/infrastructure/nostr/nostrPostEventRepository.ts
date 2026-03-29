@@ -92,6 +92,7 @@ export class NostrPostEventRepository {
 		} catch (error) {
 			throw new Error(
 				"ネットワーク内のいずれのリレーへのイベント送信も失敗しました。",
+				{ cause: error },
 			);
 		}
 	}

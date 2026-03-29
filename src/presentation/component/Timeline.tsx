@@ -36,16 +36,15 @@ export const Timeline = ({
 			case "unread":
 				return timeline.filter((e) => !readPostIds.has(e.id));
 			case "home":
+				return timeline; // ※実際にはここでホーム（フォロー中）のフィルタリングを行う
 			case "list":
-			default:
-				// ※実際にはここでホーム（フォロー中）やリスト（特定ユーザー群）のフィルタリングを行う
-				return timeline;
+				return timeline; // ※実際にはここでリスト（特定ユーザー群）のフィルタリングを行う
 		}
 	}, [timeline, currentTab, readPostIds]);
 
 	return (
 		<Box
-			component="main"
+			component='main'
 			ref={containerRef}
 			onScroll={handleScroll}
 			sx={{
@@ -113,7 +112,7 @@ const PostEventItem = React.memo(
 
 			if (diff < 60) return `${Math.floor(diff)}秒前`;
 			if (diff < 3600) return `${Math.floor(diff / 60)}分前`;
-			return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+			return `${date.toLocaleDateString()}·${date.toLocaleTimeString()}`;
 		};
 
 		const bgColor =
@@ -126,7 +125,7 @@ const PostEventItem = React.memo(
 
 		return (
 			<Box
-				className="post-item"
+				className='post-item'
 				data-post-id={event.id}
 				sx={{
 					position: "relative",
@@ -171,7 +170,7 @@ const PostEventItem = React.memo(
 
 				{/* コンテンツ本体 */}
 				<Box
-					component="article"
+					component='article'
 					{...handlers}
 					sx={{
 						p: 2,
@@ -204,7 +203,7 @@ const PostEventItem = React.memo(
 								},
 							}}
 						>
-							<Heart size={80} color="#ef4444" fill="#ef4444" />
+							<Heart size={80} color='#ef4444' fill='#ef4444' />
 						</Box>
 					)}
 
@@ -224,24 +223,24 @@ const PostEventItem = React.memo(
 							}}
 						>
 							<Typography
-								variant="subtitle2"
-								fontWeight="bold"
+								variant='subtitle2'
+								fontWeight='bold'
 								noWrap
 								sx={{ pr: 1 }}
 							>
 								{displayName}
 							</Typography>
 							<Typography
-								variant="caption"
-								color="text.secondary"
+								variant='caption'
+								color='text.secondary'
 								sx={{ whiteSpace: "nowrap" }}
 							>
 								{formatTime(event.created_at)}
 							</Typography>
 						</Box>
 						<Typography
-							variant="body2"
-							color="text.primary"
+							variant='body2'
+							color='text.primary'
 							sx={{
 								wordBreak: "break-word",
 								whiteSpace: "pre-wrap",

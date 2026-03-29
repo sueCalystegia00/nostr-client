@@ -12,7 +12,7 @@ export const useTimeline = () => {
 			setTimeline(events);
 		};
 		fetchTimeline();
-	}, []);
+	}, [timelineUsecase.fetchTimeline]);
 
 	return { timeline };
 };
