@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import type { NostrPost } from "../../../domain/model/nostr";
 import { useDI } from "../../context/diContext";
-import { useSwipeGesture } from "../../hooks/useSwipeGesture";
 import { PostItemPresenter } from "./PostItemPresenter";
 
 interface Props {
@@ -30,21 +29,11 @@ export const PostItemContainer = ({ event, onAction, registerItem }: Props) => {
 		}
 	}, [event.id, event.pubkey, liked, onAction, postUsecase]);
 
-	// ロジックをフックに委譲
-	const { translateX, isDragging, handlers } = useSwipeGesture(
-		() => onAction("返信画面を開きます"), // Left Swipe
-		() => onAction("リポストしました"), // Right Swipe
-		handleLike, // Double Tap
-	);
-
 	return (
 		<PostItemPresenter
 			event={event}
 			liked={liked}
 			showLikeAnim={showLikeAnim}
-			translateX={translateX}
-			isDragging={isDragging}
-			handlers={handlers}
 			onLike={handleLike}
 			registerItem={registerItem}
 		/>

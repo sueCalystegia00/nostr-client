@@ -8,9 +8,6 @@ interface Props {
 	event: NostrPost;
 	liked: boolean;
 	showLikeAnim: boolean;
-	translateX: number;
-	isDragging: boolean;
-	handlers: any; // swipe event handlers
 	onLike: () => void;
 	registerItem: (id: string, el: HTMLElement | null) => void;
 }
@@ -30,15 +27,9 @@ export const PostItemPresenter = React.memo(
 		event,
 		liked,
 		showLikeAnim,
-		translateX,
-		isDragging,
-		handlers,
 		onLike,
 		registerItem,
 	}: Props) => {
-		const bgColor =
-			translateX > 0 ? "#e0f2fe" : translateX < 0 ? "#dcfce3" : "transparent";
-
 		const displayName =
 			event.profile?.display_name ||
 			event.profile?.name ||
@@ -54,7 +45,6 @@ export const PostItemPresenter = React.memo(
 					overflow: "hidden",
 					borderBottom: 1,
 					borderColor: "divider",
-					bgcolor: bgColor,
 				}}
 			>
 				{/* 背景アイコン (返信・リポスト) */}
@@ -65,7 +55,6 @@ export const PostItemPresenter = React.memo(
 						top: "50%",
 						transform: "translateY(-50%)",
 						color: "primary.main",
-						opacity: translateX > 20 ? Math.min((translateX - 20) / 40, 1) : 0,
 						display: "flex",
 						alignItems: "center",
 					}}
@@ -79,10 +68,6 @@ export const PostItemPresenter = React.memo(
 						top: "50%",
 						transform: "translateY(-50%)",
 						color: "#22c55e",
-						opacity:
-							translateX < -20
-								? Math.min((Math.abs(translateX) - 20) / 40, 1)
-								: 0,
 						display: "flex",
 						alignItems: "center",
 					}}
@@ -93,7 +78,6 @@ export const PostItemPresenter = React.memo(
 				{/* コンテンツ本体 */}
 				<Box
 					component="article"
-					{...handlers}
 					sx={{
 						p: 2,
 						bgcolor: "background.paper",
@@ -103,8 +87,6 @@ export const PostItemPresenter = React.memo(
 						zIndex: 1,
 						userSelect: "none",
 						touchAction: "pan-y",
-						transform: `translateX(${translateX}px)`,
-						transition: isDragging ? "none" : "transform 0.2s ease-out",
 					}}
 				>
 					{/* いいねアニメーション */}
