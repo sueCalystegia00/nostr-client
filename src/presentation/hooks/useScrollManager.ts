@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import type { TabType } from "../../domain/model/ui";
+import type { TabType } from "../model/ui";
 
 /** スクロール監視と位置の復元を管理するフック */
 export const useScrollManager = (
@@ -7,14 +7,14 @@ export const useScrollManager = (
 	onReadDetected: (ids: string[]) => void,
 ) => {
 	const containerRef = useRef<HTMLDivElement>(null);
-	const itemsRef = useRef<Map<string, HTMLElement>>(new Map()); // 各投稿要素のRefを保持するMap
+	const itemsRef = useRef<Map<string, HTMLElement>>(new Map());
 
 	const [lastViewedIds, setLastViewedIds] = useState<
 		Record<TabType, string | null>
 	>({
-		unread: null,
-		home: null,
-		list: null,
+		UNREAD: null,
+		HOME: null,
+		LIST: null,
 	});
 
 	// 要素の参照を登録/解除するコールバック

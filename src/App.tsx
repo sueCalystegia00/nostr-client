@@ -6,7 +6,7 @@ import {
 	ThemeProvider,
 } from "@mui/material";
 import { useState } from "react";
-import type { TabType } from "./domain/model/ui";
+import type { TabType } from "./presentation/model/ui";
 import AppHeader from "./presentation/component/AppHeader";
 import { Timeline } from "./presentation/component/Timeline";
 import { useReadReceipts } from "./presentation/hooks/useReadReceipts";
@@ -36,7 +36,7 @@ const App = () => {
 	const { timeline } = useTimeline();
 
 	// 2. 状態・ユースケース管理 (Application層の呼び出し)
-	const [currentTab, setCurrentTab] = useState<TabType>("home");
+	const [currentTab, setCurrentTab] = useState<TabType>("HOME");
 	const [toastMessage, setToastMessage] = useState<string | null>(null);
 
 	const { readPostIds, markAsRead, unreadCount } = useReadReceipts(

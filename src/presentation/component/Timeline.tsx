@@ -2,7 +2,7 @@ import { Avatar, Box, Typography } from "@mui/material";
 import { Heart, MessageSquare, Repeat2 } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import type { NostrPost } from "../../domain/model/nostr";
-import type { TabType } from "../../domain/model/ui";
+import type { TabType } from "../model/ui";
 import { useDI } from "../context/diContext";
 import { useScrollManager } from "../hooks/useScrollManager";
 import { useSwipeGesture } from "../hooks/useSwipeGesture";
@@ -34,11 +34,11 @@ export const Timeline = ({
 
 	const filteredEvents = useMemo(() => {
 		switch (currentTab) {
-			case "unread":
+			case "UNREAD":
 				return timeline.filter((e) => !readPostIds.has(e.id));
-			case "home":
+			case "HOME":
 				return timeline; // ※実際にはここでホーム（フォロー中）のフィルタリングを行う
-			case "list":
+			case "LIST":
 				return timeline; // ※実際にはここでリスト（特定ユーザー群）のフィルタリングを行う
 		}
 	}, [timeline, currentTab, readPostIds]);

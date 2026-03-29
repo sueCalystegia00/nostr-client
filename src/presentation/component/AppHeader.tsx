@@ -1,6 +1,6 @@
 import { AppBar, Badge, Tab, Tabs, Toolbar, Typography } from "@mui/material";
 import { Bell, Home, List } from "lucide-react";
-import type { TabType } from "../../domain/model/ui";
+import type { TabType } from "../model/ui";
 
 /** ヘッダーナビゲーション */
 const AppHeader = ({
@@ -26,7 +26,7 @@ const AppHeader = ({
 			textColor="primary"
 		>
 			<Tab
-				value="unread"
+				value="UNREAD"
 				icon={
 					<Badge
 						badgeContent={unreadCount}
@@ -41,14 +41,14 @@ const AppHeader = ({
 				sx={{ minHeight: 48, textTransform: "none", fontWeight: "bold" }}
 			/>
 			<Tab
-				value="home"
+				value="HOME"
 				icon={<Home size={20} />}
 				iconPosition="start"
 				label="ホーム"
 				sx={{ minHeight: 48, textTransform: "none", fontWeight: "bold" }}
 			/>
 			<Tab
-				value="list"
+				value="LIST"
 				icon={<List size={20} />}
 				iconPosition="start"
 				label="リスト"
