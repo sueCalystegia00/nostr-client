@@ -33,6 +33,7 @@ export class NostrPostEventRepository {
 				{
 					authors: undefined,
 					kinds: [ShortTextNote],
+					limit: 100,
 				},
 				{
 					onevent: (event: Event) => {
@@ -59,6 +60,7 @@ export class NostrPostEventRepository {
 			{
 				authors: undefined,
 				kinds: [ShortTextNote],
+				limit: 100,
 			},
 			{
 				onevent: (event: Event) => {
