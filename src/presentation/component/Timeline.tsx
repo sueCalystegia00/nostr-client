@@ -45,7 +45,7 @@ export const Timeline = ({
 
 	return (
 		<Box
-			component='main'
+			component="main"
 			ref={containerRef}
 			onScroll={handleScroll}
 			sx={{
@@ -78,6 +78,52 @@ export const Timeline = ({
 			</Box>
 		</Box>
 	);
+};
+
+/** 投稿内のテキストから画像URLを抽出して描画するヘルパー */
+const renderContent = (content: string) => {
+	const urlRegex = /(https?:\/\/[^\s]+?\.(?:png|jpe?g|gif|webp)(?:\?[^\s]*)?)/i;
+	const parts = content.split(urlRegex);
+
+	let keyId = 0;
+	return parts.map((part) => {
+		const currentKey = keyId++;
+		if (part.match(urlRegex)) {
+			return (
+				<Box key={currentKey} sx={{ mt: 1, mb: 1 }}>
+					<img
+						src={part}
+						alt="post content"
+						style={{
+							maxWidth: "100%",
+							maxHeight: "400px",
+							borderRadius: "8px",
+							objectFit: "contain",
+						}}
+						loading="lazy"
+					/>
+				</Box>
+			);
+		}
+		if (part) {
+			return (
+				<Typography
+					key={currentKey}
+					variant="body2"
+					color="text.primary"
+					component="span"
+					sx={{
+						wordBreak: "break-word",
+						whiteSpace: "pre-wrap",
+						lineHeight: 1.6,
+					}}
+				>
+					{part}
+				</Typography>
+			);
+		}
+		return null;
+	});
 };
 
 /** 投稿1件を表示するコンポーネント */
@@ -135,7 +181,7 @@ const PostEventItem = React.memo(
 
 		return (
 			<Box
-				className='post-item'
+				className="post-item"
 				data-post-id={event.id}
 				sx={{
 					position: "relative",
@@ -180,7 +226,7 @@ const PostEventItem = React.memo(
 
 				{/* コンテンツ本体 */}
 				<Box
-					component='article'
+					component="article"
 					{...handlers}
 					sx={{
 						p: 2,
@@ -213,7 +259,7 @@ const PostEventItem = React.memo(
 								},
 							}}
 						>
-							<Heart size={80} color='#ef4444' fill='#ef4444' />
+							<Heart size={80} color="#ef4444" fill="#ef4444" />
 						</Box>
 					)}
 
@@ -233,32 +279,22 @@ const PostEventItem = React.memo(
 							}}
 						>
 							<Typography
-								variant='subtitle2'
-								fontWeight='bold'
+								variant="subtitle2"
+								fontWeight="bold"
 								noWrap
 								sx={{ pr: 1 }}
 							>
 								{displayName}
 							</Typography>
 							<Typography
-								variant='caption'
-								color='text.secondary'
+								variant="caption"
+								color="text.secondary"
 								sx={{ whiteSpace: "nowrap" }}
 							>
 								{formatTime(event.created_at)}
 							</Typography>
 						</Box>
-						<Typography
-							variant='body2'
-							color='text.primary'
-							sx={{
-								wordBreak: "break-word",
-								whiteSpace: "pre-wrap",
-								lineHeight: 1.6,
-							}}
-						>
-							{event.content}
-						</Typography>
+						<Box sx={{ mt: 0.5, mb: 1.5 }}>{renderContent(event.content)}</Box>
 
 						<Box
 							sx={{
