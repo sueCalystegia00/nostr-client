@@ -9,7 +9,7 @@ import { useState } from "react";
 import AppHeader from "./presentation/component/AppHeader";
 import { TimelineContainer as Timeline } from "./presentation/component/timeline/TimelineContainer";
 import { useReadReceipts } from "./presentation/hooks/useReadReceipts";
-import { useTimeline } from "./presentation/hooks/useTimeline";
+import { useTimelineController } from "./presentation/hooks/useTimelineController";
 import type { TabType } from "./presentation/model/ui";
 
 // --- MUIテーマ定義 ---
@@ -33,7 +33,7 @@ const theme = createTheme({
 
 const App = () => {
 	// 1. データ取得 (Infrastructure層の呼び出し)
-	const { timeline } = useTimeline();
+	const { timeline } = useTimelineController();
 
 	// 2. 状態・ユースケース管理 (Application層の呼び出し)
 	const [currentTab, setCurrentTab] = useState<TabType>("HOME");

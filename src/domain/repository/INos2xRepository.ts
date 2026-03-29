@@ -1,5 +1,4 @@
-import type { NostrEvent, UnsignedEvent } from "nostr-tools/pure";
-import type { RelayConfig } from "../model/nostr";
+import type { NostrEvent, RelayConfig, UnsignedEvent } from "../model/nostr";
 
 export interface INos2xRepository {
 	getPublicKey(): Promise<string>;

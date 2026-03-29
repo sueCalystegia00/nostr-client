@@ -23,13 +23,7 @@ const formatTime = (ts: number) => {
 };
 
 export const PostItemPresenter = React.memo(
-	({
-		event,
-		liked,
-		showLikeAnim,
-		onLike,
-		registerItem,
-	}: Props) => {
+	({ event, liked, showLikeAnim, onLike, registerItem }: Props) => {
 		const displayName =
 			event.profile?.display_name ||
 			event.profile?.name ||

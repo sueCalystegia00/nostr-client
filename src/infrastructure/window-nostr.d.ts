@@ -1,7 +1,7 @@
 // https://github.com/syusui-s/rabbit/blob/main/src/types/nostr.d.ts
 // The original code was published under the public domain license (CC0-1.0).
 // https://gist.github.com/syusui-s/cd5482ddfc83792b54a756759acbda55
-import type { Event as NostrEvent, UnsignedEvent } from "nostr-tools/pure";
+import type { NostrEvent, UnsignedEvent } from "../domain/model/nostr";
 
 type NostrAPI = {
 	/** returns a public key as hex */

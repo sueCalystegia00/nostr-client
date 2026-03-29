@@ -27,7 +27,7 @@ export const renderContent = (content: string) => {
 						mb: 1,
 					}}
 				>
-					{mediaGroup.map((mediaUrl, i) => {
+					{mediaGroup.map((mediaUrl) => {
 						const commonStyle = {
 							width: "100%",
 							height: mediaGroup.length > 1 ? "200px" : "auto",
@@ -39,8 +39,9 @@ export const renderContent = (content: string) => {
 						};
 
 						return isVideo(mediaUrl) ? (
+							// biome-ignore lint/a11y/useMediaCaption: Nostr user media rarely has tracks
 							<video
-								key={`${mediaUrl}-${i}`}
+								key={mediaUrl}
 								src={mediaUrl}
 								style={commonStyle}
 								controls
@@ -48,7 +49,7 @@ export const renderContent = (content: string) => {
 							/>
 						) : (
 							<img
-								key={`${mediaUrl}-${i}`}
+								key={mediaUrl}
 								src={mediaUrl}
 								alt="post content"
 								style={commonStyle}

@@ -1,5 +1,9 @@
-import type { NostrEvent, UnsignedEvent } from "nostr-tools/pure";
-import type { RelayConfig, RelayMarker } from "../../domain/model/nostr";
+import type {
+	NostrEvent,
+	RelayConfig,
+	RelayMarker,
+	UnsignedEvent,
+} from "../../domain/model/nostr";
 import type { INos2xRepository } from "../../domain/repository/INos2xRepository";
 import { RelayUrl } from "../../domain/valueObject/RelayUrl";
 
@@ -42,7 +46,7 @@ export class Nos2xRepository implements INos2xRepository {
 	async signEvent(event: UnsignedEvent): Promise<NostrEvent> {
 		await this.waitLoadingNos2xExtension();
 		if (window.nostr) {
-			return await window.nostr.signEvent(event);
+			return (await window.nostr.signEvent(event)) as NostrEvent;
 		}
 		throw new Error("nos2x is not installed.");
 	}

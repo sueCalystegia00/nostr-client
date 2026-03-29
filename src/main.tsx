@@ -1,9 +1,9 @@
+import { NDKHeadless } from "@nostr-dev-kit/react";
 import { setNostrWasm } from "nostr-tools/wasm";
 import { initNostrWasm } from "nostr-wasm";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { DIProvider } from "./presentation/context/diContext";
 import "./style.css";
 
 const rootElement = document.getElementById("root");
@@ -12,9 +12,10 @@ if (rootElement) {
 
 	ReactDOM.createRoot(rootElement).render(
 		<React.StrictMode>
-			<DIProvider>
-				<App />
-			</DIProvider>
+			<NDKHeadless
+				ndk={{ explicitRelayUrls: ["wss://nos.lol", "wss://relay.damus.io"] }}
+			/>
+			<App />
 		</React.StrictMode>,
 	);
 } else {

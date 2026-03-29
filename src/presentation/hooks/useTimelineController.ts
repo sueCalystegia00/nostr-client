@@ -1,38 +1,61 @@
+import { useNDK } from "@nostr-dev-kit/react";
 import { useEffect, useMemo, useState } from "react";
+import { TimelineUsecase } from "../../application/usecase/timelineUsecase";
 import type { NostrPost } from "../../domain/model/nostr";
-import { useDI } from "../context/diContext";
+import { NostrEventService } from "../../domain/service/nostrEventService";
+import { NostrRelayService } from "../../domain/service/nostrRelayService";
+import { NdkEventRepository } from "../../infrastructure/nostr/ndkEventRepository";
+import { Nos2xRepository } from "../../infrastructure/nostr/nos2xRepository";
+import { NostrRelayRepository } from "../../infrastructure/nostr/nostrRelayRepository";
 
 interface TimelineState {
 	byId: Record<string, NostrPost>;
 	orderedIds: string[];
 }
 
-export const useTimeline = () => {
+export const useTimelineController = () => {
+	// 1. NDKからインスタンスを取得
+	const { ndk } = useNDK();
+
 	const [state, setState] = useState<TimelineState>({
 		byId: {},
 		orderedIds: [],
 	});
-	const { timelineUsecase } = useDI();
+
+	// 2. DIとUsecaseのインスタンス化
+	const timelineUsecase = useMemo(() => {
+		if (!ndk) return null;
+		// リポジトリ
+		const ndkEventRepo = new NdkEventRepository(ndk);
+		const nos2xRepo = new Nos2xRepository();
+		const relayRepo = new NostrRelayRepository();
+
+		// サービス
+		const eventService = new NostrEventService(nos2xRepo, ndkEventRepo);
+		const relayService = new NostrRelayService(nos2xRepo, relayRepo);
+
+		// ユースケース生成
+		return new TimelineUsecase(eventService, relayService);
+	}, [ndk]);
 
 	useEffect(() => {
 		let isMounted = true;
 		let unsubscribe: (() => void) | undefined;
 
 		const subscribe = async () => {
+			if (!timelineUsecase) return;
+
 			const cleanup = await timelineUsecase.subscribeTimeline((newEvent) => {
 				if (!isMounted) return;
 				setState((prev) => {
 					const isExisting = Boolean(prev.byId[newEvent.id]);
 					if (isExisting) {
-						// 既存のイベントのプロフィール情報の後追い更新等: O(1)
 						return {
 							...prev,
 							byId: { ...prev.byId, [newEvent.id]: newEvent },
 						};
 					}
 
-					// 新規イベントは、既に降順（最新が先頭）ソート済のリストに対して適切な位置へ挿入する
-					// ストリーミングで流れてくる最新イベントは二分探索で高速に挿入位置（通常は先頭位置0）に決定される
 					const newOrderedIds = [...prev.orderedIds];
 					let low = 0;
 					let high = newOrderedIds.length - 1;
@@ -40,7 +63,6 @@ export const useTimeline = () => {
 					while (low <= high) {
 						const mid = Math.floor(low + (high - low) / 2);
 						const midEvent = prev.byId[newOrderedIds[mid]];
-						// 降順ソート
 						if (midEvent.created_at < newEvent.created_at) {
 							high = mid - 1;
 						} else {

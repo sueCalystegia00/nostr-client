@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import type { NostrPost } from "../../../domain/model/nostr";
-import { useDI } from "../../context/diContext";
+import { usePostController } from "../../hooks/usePostController";
 import { PostItemPresenter } from "./PostItemPresenter";
 
 interface Props {
@@ -13,12 +13,12 @@ export const PostItemContainer = ({ event, onAction, registerItem }: Props) => {
 	const [liked, setLiked] = useState(false);
 	const [showLikeAnim, setShowLikeAnim] = useState(false);
 
-	const { postUsecase } = useDI();
+	const { react } = usePostController();
 
 	const handleLike = useCallback(async () => {
 		if (liked) return;
 		try {
-			await postUsecase.react(event.id, event.pubkey);
+			await react(event.id, event.pubkey);
 			setLiked(true);
 			setShowLikeAnim(true);
 			onAction("いいねしました");
@@ -27,7 +27,7 @@ export const PostItemContainer = ({ event, onAction, registerItem }: Props) => {
 			console.error("Failed to react:", e);
 			onAction("いいねに失敗しました");
 		}
-	}, [event.id, event.pubkey, liked, onAction, postUsecase]);
+	}, [event.id, event.pubkey, liked, onAction, react]);
 
 	return (
 		<PostItemPresenter
