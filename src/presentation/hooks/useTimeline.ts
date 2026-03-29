@@ -7,10 +7,12 @@ export const useTimeline = () => {
 	const timelineUsecase = useMemo(() => new TimelineUsecase(), []);
 
 	useEffect(() => {
+		let isMounted = true;
 		let unsubscribe: (() => void) | undefined;
 
 		const subscribe = async () => {
-			unsubscribe = await timelineUsecase.subscribeTimeline((newEvent) => {
+			const cleanup = await timelineUsecase.subscribeTimeline((newEvent) => {
+				if (!isMounted) return;
 				setTimeline((prev) => {
 					const existsIndex = prev.findIndex((e) => e.id === newEvent.id);
 					const newTimeline = [...prev];
@@ -32,11 +34,18 @@ export const useTimeline = () => {
 					return newTimeline;
 				});
 			});
+
+			if (!isMounted) {
+				cleanup();
+			} else {
+				unsubscribe = cleanup;
+			}
 		};
 
 		subscribe();
 
 		return () => {
+			isMounted = false;
 			if (unsubscribe) {
 				unsubscribe();
 			}
