@@ -52,6 +52,8 @@ const App = () => {
 					display: "flex",
 					flexDirection: "column",
 					height: "100vh",
+					width: "100%",
+					overflow: "hidden",
 					bgcolor: "background.default",
 				}}
 			>
