@@ -56,7 +56,11 @@ export class NostrEventService {
 		const profiles = new Map<string, UserProfile>();
 		const fetchingProfiles = new Set<string>();
 
-		const unsubscribe = this.nostrPostEventRepository.subscribeEvents(
+		const pendingPubkeys = new Set<string>();
+		let batchTimeoutId: ReturnType<typeof setTimeout> | null = null;
+		const pendingEventsForProfile = new Map<string, NostrPost[]>();
+
+		const unsubscribeEvents = this.nostrPostEventRepository.subscribeEvents(
 			relaysModels,
 			(event) => {
 				const profile = profiles.get(event.pubkey);
@@ -67,35 +71,68 @@ export class NostrEventService {
 				// まずは即時通知（プロフィール情報なしの場合はなしのまま）
 				onEvent(post);
 
-				// プロフィール情報がなく、現在取得中でない場合は取得をリクエスト
-				if (!profile && !fetchingProfiles.has(event.pubkey)) {
-					fetchingProfiles.add(event.pubkey);
-					this.nostrPostEventRepository
-						.fetchUserProfile(event.pubkey, relaysModels)
-						.then((profileEvent) => {
-							if (profileEvent) {
-								try {
-									const parsedProfile = JSON.parse(
-										profileEvent.content,
-									) as UserProfile;
-									parsedProfile.pubkey = profileEvent.pubkey;
-									profiles.set(event.pubkey, parsedProfile);
+				// プロフィール情報がない場合は取得をリクエスト
+				if (!profile) {
+					if (!fetchingProfiles.has(event.pubkey)) {
+						fetchingProfiles.add(event.pubkey);
+						pendingPubkeys.add(event.pubkey);
+					}
 
-									// プロフィールが取得できたら後追いで再通知して更新を促す
-									onEvent({
-										...event,
-										profile: parsedProfile,
-									});
-								} catch (e) {
-									console.error("failed to parse profile", e);
-								}
-							}
-						})
+					// あとでプロフィール取得完了時に再通知できるよう、イベントを保持
+					const userEvents = pendingEventsForProfile.get(event.pubkey) || [];
+					userEvents.push(post);
+					pendingEventsForProfile.set(event.pubkey, userEvents);
+
+					if (pendingPubkeys.size > 0 && !batchTimeoutId) {
+						batchTimeoutId = setTimeout(() => {
+							const pubkeysToFetch = Array.from(pendingPubkeys);
+							pendingPubkeys.clear();
+							batchTimeoutId = null;
+
+							this.nostrPostEventRepository
+								.fetchUserProfiles(pubkeysToFetch, relaysModels)
+								.then((profileEvents) => {
+									for (const profileEvent of profileEvents) {
+										try {
+											const parsedProfile = JSON.parse(
+												profileEvent.content,
+											) as UserProfile;
+											parsedProfile.pubkey = profileEvent.pubkey;
+											profiles.set(profileEvent.pubkey, parsedProfile);
+										} catch (e) {
+											console.error("failed to parse profile", e);
+										}
+									}
+
+									// 対象のpubkeyごとに再通知処理
+									for (const pubkey of pubkeysToFetch) {
+										const parsedProfile = profiles.get(pubkey);
+										if (parsedProfile) {
+											const userEventsToNotify =
+												pendingEventsForProfile.get(pubkey) || [];
+											for (const e of userEventsToNotify) {
+												onEvent({
+													...e,
+													profile: parsedProfile,
+												});
+											}
+										}
+										// 完了したpubkeyのイベントキャッシュを解放
+										pendingEventsForProfile.delete(pubkey);
+									}
+								});
+						}, 500); // 500msのバッチウィンドウ
+					}
 				}
 			},
 		);
 
-		return unsubscribe;
+		return () => {
+			if (batchTimeoutId) {
+				clearTimeout(batchTimeoutId);
+			}
+			unsubscribeEvents();
+		};
 	}
 
 	async post(content: string, relays: RelayConfig[]): Promise<void> {
