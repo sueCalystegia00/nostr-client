@@ -80,57 +80,71 @@ export const Timeline = ({
 	);
 };
 
-/** 投稿内のテキストから画像URLを抽出して描画するヘルパー */
+/** 投稿内のテキストから画像・動画URLを抽出して描画するヘルパー */
 const renderContent = (content: string) => {
-	const urlRegex = /(https?:\/\/[^\s]+?\.(?:png|jpe?g|gif|webp)(?:\?[^\s]*)?)/i;
+	const urlRegex = /(https?:\/\/[^\s]+?\.(?:png|jpe?g|gif|webp|mp4|webm|ogg|mov)(?:\?[^\s]*)?)/i;
 	const parts = content.split(urlRegex);
 
 	const elements: React.ReactNode[] = [];
-	let imageGroup: string[] = [];
+	let mediaGroup: string[] = [];
 
-	const flushImages = () => {
-		if (imageGroup.length > 0) {
+	const isVideo = (url: string) => /\.(mp4|webm|ogg|mov)(?:\?[^\s]*)?$/i.test(url);
+
+	const flushMedia = () => {
+		if (mediaGroup.length > 0) {
 			elements.push(
 				<Box
-					key={`img-group-${elements.length}`}
+					key={`media-group-${elements.length}`}
 					sx={{
 						display: "grid",
-						gridTemplateColumns: imageGroup.length > 1 ? "repeat(2, 1fr)" : "1fr",
+						gridTemplateColumns: mediaGroup.length > 1 ? "repeat(2, 1fr)" : "1fr",
 						gap: 1,
 						mt: 1,
 						mb: 1,
 					}}
 				>
-					{imageGroup.map((imgUrl, i) => (
-						<img
-							key={`${imgUrl}-${i}`}
-							src={imgUrl}
-							alt="post content"
-							style={{
-								width: "100%",
-								height: imageGroup.length > 1 ? "200px" : "auto",
-								maxHeight: "400px",
-								borderRadius: "8px",
-								objectFit: imageGroup.length > 1 ? "cover" : "contain",
-							}}
-							loading="lazy"
-						/>
-					))}
+					{mediaGroup.map((mediaUrl, i) => {
+						const commonStyle = {
+							width: "100%",
+							height: mediaGroup.length > 1 ? "200px" : "auto",
+							maxHeight: "400px",
+							borderRadius: "8px",
+							objectFit: (mediaGroup.length > 1 ? "cover" : "contain") as any,
+						};
+
+						return isVideo(mediaUrl) ? (
+							<video
+								key={`${mediaUrl}-${i}`}
+								src={mediaUrl}
+								style={commonStyle}
+								controls
+								preload="metadata"
+							/>
+						) : (
+							<img
+								key={`${mediaUrl}-${i}`}
+								src={mediaUrl}
+								alt="post content"
+								style={commonStyle}
+								loading="lazy"
+							/>
+						);
+					})}
 				</Box>
 			);
-			imageGroup = [];
+			mediaGroup = [];
 		}
 	};
 
 	parts.forEach((part) => {
 		if (part.match(urlRegex)) {
-			imageGroup.push(part);
+			mediaGroup.push(part);
 		} else {
-			if (part.trim() === "" && imageGroup.length > 0) {
+			if (part.trim() === "" && mediaGroup.length > 0) {
 				return;
 			}
 			if (part) {
-				flushImages();
+				flushMedia();
 				elements.push(
 					<Typography
 						key={`text-${elements.length}`}
@@ -150,7 +164,7 @@ const renderContent = (content: string) => {
 		}
 	});
 
-	flushImages();
+	flushMedia();
 
 	return elements;
 };
