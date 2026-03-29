@@ -6,8 +6,9 @@ import { Metadata, ShortTextNote } from "nostr-tools/kinds";
 import type { Event } from "nostr-tools/pure";
 import { verifyEvent } from "nostr-tools/wasm";
 import type { RelayModel } from "../../domain/model/nostr";
+import type { INostrPostEventRepository } from "../../domain/repository/INostrPostEventRepository";
 
-export class NostrPostEventRepository {
+export class NostrPostEventRepository implements INostrPostEventRepository {
 	private pool: AbstractSimplePool;
 
 	constructor() {

@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
-import { TimelineUsecase } from "../../application/usecase/timelineUsecase";
+import { useEffect, useState } from "react";
 import type { NostrPost } from "../../domain/model/nostr";
+import { useDI } from "../context/diContext";
 
 export const useTimeline = () => {
 	const [timeline, setTimeline] = useState<NostrPost[]>([]);
-	const timelineUsecase = useMemo(() => new TimelineUsecase(), []);
+	const { timelineUsecase } = useDI();
 
 	useEffect(() => {
 		let isMounted = true;

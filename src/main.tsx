@@ -2,6 +2,7 @@ import { setNostrWasm } from "nostr-tools/wasm";
 import { initNostrWasm } from "nostr-wasm";
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { DIProvider } from "./presentation/context/diContext";
 import App from "./App";
 import "./style.css";
 
@@ -11,7 +12,9 @@ if (rootElement) {
 
 	ReactDOM.createRoot(rootElement).render(
 		<React.StrictMode>
-			<App />
+			<DIProvider>
+				<App />
+			</DIProvider>
 		</React.StrictMode>,
 	);
 } else {

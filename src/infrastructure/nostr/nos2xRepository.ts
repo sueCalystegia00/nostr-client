@@ -1,8 +1,9 @@
 import type { NostrEvent, UnsignedEvent } from "nostr-tools/pure";
 import type { RelayConfig, RelayMarker } from "../../domain/model/nostr";
+import type { INos2xRepository } from "../../domain/repository/INos2xRepository";
 import { RelayUrl } from "../../domain/valueObject/RelayUrl";
 
-export class Nos2xRepository {
+export class Nos2xRepository implements INos2xRepository {
 	async getPublicKey(): Promise<string> {
 		await this.waitLoadingNos2xExtension();
 		if (window.nostr) {

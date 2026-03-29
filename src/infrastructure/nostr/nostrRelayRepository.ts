@@ -1,9 +1,10 @@
 import { SimplePool } from "nostr-tools";
 import { RelayList } from "nostr-tools/kinds";
 import type { RelayConfig, RelayMarker } from "../../domain/model/nostr";
+import type { INostrRelayRepository } from "../../domain/repository/INostrRelayRepository";
 import { RelayUrl } from "../../domain/valueObject/RelayUrl";
 
-export class NostrRelayRepository {
+export class NostrRelayRepository implements INostrRelayRepository {
 	private pool: SimplePool;
 
 	constructor() {

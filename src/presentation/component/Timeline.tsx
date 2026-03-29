@@ -1,9 +1,9 @@
 import { Avatar, Box, Typography } from "@mui/material";
 import { Heart, MessageSquare, Repeat2 } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { PostUsecase } from "../../application/usecase/postUsecase";
 import type { NostrPost } from "../../domain/model/nostr";
 import type { TabType } from "../../domain/model/ui";
+import { useDI } from "../context/diContext";
 import { useScrollManager } from "../hooks/useScrollManager";
 import { useSwipeGesture } from "../hooks/useSwipeGesture";
 
@@ -138,7 +138,7 @@ const PostEventItem = React.memo(
 		const [liked, setLiked] = useState(false);
 		const [showLikeAnim, setShowLikeAnim] = useState(false);
 
-		const postUsecase = useMemo(() => new PostUsecase(), []);
+		const { postUsecase } = useDI();
 
 		const handleLike = useCallback(async () => {
 			if (liked) return;

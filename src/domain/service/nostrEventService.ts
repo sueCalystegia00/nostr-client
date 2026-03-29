@@ -1,5 +1,5 @@
-import { Nos2xRepository } from "../../infrastructure/nostr/nos2xRepository";
-import { NostrPostEventRepository } from "../../infrastructure/nostr/nostrPostEventRepository";
+import type { INos2xRepository } from "../repository/INos2xRepository";
+import type { INostrPostEventRepository } from "../repository/INostrPostEventRepository";
 import type {
 	NostrPost,
 	RelayConfig,
@@ -10,12 +10,15 @@ import type {
 } from "../model/nostr";
 
 export class NostrEventService {
-	private nos2xRepository: Nos2xRepository;
-	private nostrPostEventRepository: NostrPostEventRepository;
+	private nos2xRepository: INos2xRepository;
+	private nostrPostEventRepository: INostrPostEventRepository;
 
-	constructor() {
-		this.nos2xRepository = new Nos2xRepository();
-		this.nostrPostEventRepository = new NostrPostEventRepository();
+	constructor(
+		nos2xRepository: INos2xRepository,
+		nostrPostEventRepository: INostrPostEventRepository,
+	) {
+		this.nos2xRepository = nos2xRepository;
+		this.nostrPostEventRepository = nostrPostEventRepository;
 	}
 
 	async fetchTimeline(relays: RelayConfig[]): Promise<NostrPost[]> {

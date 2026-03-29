@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { PostUsecase } from "../../application/usecase/postUsecase";
+import { useDI } from "../context/diContext";
 
 export const PostForm = () => {
 	const [content, setContent] = useState("");
-	const postUsecase = new PostUsecase();
+	const { postUsecase } = useDI();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();

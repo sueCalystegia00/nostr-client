@@ -1,5 +1,5 @@
-import { Nos2xRepository } from "../../infrastructure/nostr/nos2xRepository";
-import { NostrRelayRepository } from "../../infrastructure/nostr/nostrRelayRepository";
+import type { INos2xRepository } from "../repository/INos2xRepository";
+import type { INostrRelayRepository } from "../repository/INostrRelayRepository";
 import type { RelayConfig } from "../model/nostr";
 import { RelayUrl } from "../valueObject/RelayUrl";
 
@@ -11,17 +11,21 @@ export class NostrRelayService {
 		"wss://relay.nostr.band",
 	];
 
-	private nos2xRepository: Nos2xRepository;
-	private nostrRelayRepository: NostrRelayRepository;
 	private static globalCachedRelays: RelayConfig[] | null = null;
 
 	public static clearCache(): void {
 		NostrRelayService.globalCachedRelays = null;
 	}
 
-	constructor() {
-		this.nos2xRepository = new Nos2xRepository();
-		this.nostrRelayRepository = new NostrRelayRepository();
+	private nos2xRepository: INos2xRepository;
+	private nostrRelayRepository: INostrRelayRepository;
+
+	constructor(
+		nos2xRepository: INos2xRepository,
+		nostrRelayRepository: INostrRelayRepository,
+	) {
+		this.nos2xRepository = nos2xRepository;
+		this.nostrRelayRepository = nostrRelayRepository;
 	}
 
 	public async resolveCurrentUserRelays(): Promise<RelayConfig[]> {

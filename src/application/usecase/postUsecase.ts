@@ -1,13 +1,16 @@
-import { NostrEventService } from "../../domain/service/nostrEventService";
-import { NostrRelayService } from "../../domain/service/nostrRelayService";
+import type { NostrEventService } from "../../domain/service/nostrEventService";
+import type { NostrRelayService } from "../../domain/service/nostrRelayService";
 
 export class PostUsecase {
 	private nostrEventService: NostrEventService;
 	private nostrRelayService: NostrRelayService;
 
-	constructor() {
-		this.nostrEventService = new NostrEventService();
-		this.nostrRelayService = new NostrRelayService();
+	constructor(
+		nostrEventService: NostrEventService,
+		nostrRelayService: NostrRelayService,
+	) {
+		this.nostrEventService = nostrEventService;
+		this.nostrRelayService = nostrRelayService;
 	}
 
 	async post(content: string): Promise<void> {
