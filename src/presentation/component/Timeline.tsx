@@ -2,7 +2,6 @@ import { Avatar, Box, Typography } from "@mui/material";
 import { MessageSquare, Repeat2, Heart } from "lucide-react";
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useSwipeGesture } from "../hooks/useSwipeGesture";
-import { EventService } from "../../domain/service/EventService";
 import { useScrollManager } from "../hooks/useScrollManager";
 import type { TabType } from "../../domain/model/ui";
 import type { NostrPost } from "../../domain/model/nostr";
@@ -32,11 +31,17 @@ export const Timeline = ({
 		handleScroll();
 	}, [handleScroll]);
 
-	const eventService = new EventService();
-	const filteredEvents = useMemo(
-		() => eventService.filterEventsByTab(timeline, currentTab, readPostIds),
-		[timeline, currentTab, readPostIds],
-	);
+	const filteredEvents = useMemo(() => {
+		switch (currentTab) {
+			case "unread":
+				return timeline.filter((e) => !readPostIds.has(e.id));
+			case "home":
+			case "list":
+			default:
+				// ※実際にはここでホーム（フォロー中）やリスト（特定ユーザー群）のフィルタリングを行う
+				return timeline;
+		}
+	}, [timeline, currentTab, readPostIds]);
 
 	return (
 		<Box
