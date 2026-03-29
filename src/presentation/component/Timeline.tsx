@@ -85,45 +85,74 @@ const renderContent = (content: string) => {
 	const urlRegex = /(https?:\/\/[^\s]+?\.(?:png|jpe?g|gif|webp)(?:\?[^\s]*)?)/i;
 	const parts = content.split(urlRegex);
 
-	let keyId = 0;
-	return parts.map((part) => {
-		const currentKey = keyId++;
-		if (part.match(urlRegex)) {
-			return (
-				<Box key={currentKey} sx={{ mt: 1, mb: 1 }}>
-					<img
-						src={part}
-						alt="post content"
-						style={{
-							maxWidth: "100%",
-							maxHeight: "400px",
-							borderRadius: "8px",
-							objectFit: "contain",
-						}}
-						loading="lazy"
-					/>
-				</Box>
-			);
-		}
-		if (part) {
-			return (
-				<Typography
-					key={currentKey}
-					variant="body2"
-					color="text.primary"
-					component="span"
+	const elements: React.ReactNode[] = [];
+	let imageGroup: string[] = [];
+
+	const flushImages = () => {
+		if (imageGroup.length > 0) {
+			elements.push(
+				<Box
+					key={`img-group-${elements.length}`}
 					sx={{
-						wordBreak: "break-word",
-						whiteSpace: "pre-wrap",
-						lineHeight: 1.6,
+						display: "grid",
+						gridTemplateColumns: imageGroup.length > 1 ? "repeat(2, 1fr)" : "1fr",
+						gap: 1,
+						mt: 1,
+						mb: 1,
 					}}
 				>
-					{part}
-				</Typography>
+					{imageGroup.map((imgUrl, i) => (
+						<img
+							key={`${imgUrl}-${i}`}
+							src={imgUrl}
+							alt="post content"
+							style={{
+								width: "100%",
+								height: imageGroup.length > 1 ? "200px" : "auto",
+								maxHeight: "400px",
+								borderRadius: "8px",
+								objectFit: imageGroup.length > 1 ? "cover" : "contain",
+							}}
+							loading="lazy"
+						/>
+					))}
+				</Box>
 			);
+			imageGroup = [];
 		}
-		return null;
+	};
+
+	parts.forEach((part) => {
+		if (part.match(urlRegex)) {
+			imageGroup.push(part);
+		} else {
+			if (part.trim() === "" && imageGroup.length > 0) {
+				return;
+			}
+			if (part) {
+				flushImages();
+				elements.push(
+					<Typography
+						key={`text-${elements.length}`}
+						variant="body2"
+						color="text.primary"
+						component="span"
+						sx={{
+							wordBreak: "break-word",
+							whiteSpace: "pre-wrap",
+							lineHeight: 1.6,
+						}}
+					>
+						{part}
+					</Typography>
+				);
+			}
+		}
 	});
+
+	flushImages();
+
+	return elements;
 };
 
 /** 投稿1件を表示するコンポーネント */
