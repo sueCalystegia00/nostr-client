@@ -11,6 +11,7 @@ import { TimelineContainer as Timeline } from "./presentation/component/timeline
 import { useReadReceipts } from "./presentation/hooks/useReadReceipts";
 import { useTimelineController } from "./presentation/hooks/useTimelineController";
 import type { TabType } from "./presentation/model/ui";
+import { useAuthController } from "./presentation/hooks/useAuthController";
 
 // --- MUIテーマ定義 ---
 const theme = createTheme({
@@ -33,6 +34,7 @@ const theme = createTheme({
 
 const App = () => {
 	// 1. データ取得 (Infrastructure層の呼び出し)
+	const { loginWithExtension, logout, isLoggedIn, activePubkey } = useAuthController();
 	const { timeline } = useTimelineController();
 
 	// 2. 状態・ユースケース管理 (Application層の呼び出し)
@@ -61,6 +63,10 @@ const App = () => {
 					currentTab={currentTab}
 					onTabChange={setCurrentTab}
 					unreadCount={unreadCount}
+					loginWithExtension={loginWithExtension}
+					logout={logout}
+					isLoggedIn={isLoggedIn}
+					activePubkey={activePubkey}
 				/>
 
 				<Timeline

@@ -5,8 +5,8 @@ import type { NostrPost } from "../../domain/model/nostr";
 import { NostrEventService } from "../../domain/service/nostrEventService";
 import { NostrRelayService } from "../../domain/service/nostrRelayService";
 import { NdkEventRepository } from "../../infrastructure/nostr/ndkEventRepository";
-import { Nos2xRepository } from "../../infrastructure/nostr/nos2xRepository";
 import { NostrRelayRepository } from "../../infrastructure/nostr/nostrRelayRepository";
+import { useAuthStore } from "./useAuthStore";
 
 interface TimelineState {
 	byId: Record<string, NostrPost>;
@@ -16,6 +16,7 @@ interface TimelineState {
 export const useTimelineController = () => {
 	// 1. NDKからインスタンスを取得
 	const { ndk } = useNDK();
+	const { signerAdapter } = useAuthStore();
 
 	const [state, setState] = useState<TimelineState>({
 		byId: {},
@@ -27,16 +28,15 @@ export const useTimelineController = () => {
 		if (!ndk) return null;
 		// リポジトリ
 		const ndkEventRepo = new NdkEventRepository(ndk);
-		const nos2xRepo = new Nos2xRepository();
 		const relayRepo = new NostrRelayRepository();
 
 		// サービス
-		const eventService = new NostrEventService(nos2xRepo, ndkEventRepo);
-		const relayService = new NostrRelayService(nos2xRepo, relayRepo);
+		const eventService = new NostrEventService(signerAdapter, ndkEventRepo);
+		const relayService = new NostrRelayService(signerAdapter, relayRepo);
 
 		// ユースケース生成
 		return new TimelineUsecase(eventService, relayService);
-	}, [ndk]);
+	}, [ndk, signerAdapter]);
 
 	useEffect(() => {
 		let isMounted = true;

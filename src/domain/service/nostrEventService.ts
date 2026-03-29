@@ -6,18 +6,18 @@ import type {
 	UnsignedEvent,
 	UserProfile,
 } from "../model/nostr";
-import type { INos2xRepository } from "../repository/INos2xRepository";
+import type { ISignerAdapter } from "../repository/ISignerAdapter";
 import type { INostrPostEventRepository } from "../repository/INostrPostEventRepository";
 
 export class NostrEventService {
-	private nos2xRepository: INos2xRepository;
+	private signerAdapter: ISignerAdapter | null;
 	private nostrPostEventRepository: INostrPostEventRepository;
 
 	constructor(
-		nos2xRepository: INos2xRepository,
+		signerAdapter: ISignerAdapter | null,
 		nostrPostEventRepository: INostrPostEventRepository,
 	) {
-		this.nos2xRepository = nos2xRepository;
+		this.signerAdapter = signerAdapter;
 		this.nostrPostEventRepository = nostrPostEventRepository;
 	}
 
@@ -139,9 +139,12 @@ export class NostrEventService {
 	}
 
 	async post(content: string, relays: RelayConfig[]): Promise<void> {
-		const publicKey = await this.nos2xRepository.getPublicKey();
+		if (!this.signerAdapter) {
+			throw new Error("Cannot post: User is not authenticated.");
+		}
+		const publicKey = await this.signerAdapter.getPublicKey();
 		const unsignedEvent = this.createUnsignedEvent(publicKey, content);
-		const signedEvent = await this.nos2xRepository.signEvent(unsignedEvent);
+		const signedEvent = await this.signerAdapter.signEvent(unsignedEvent);
 
 		const relaysModels = this.getRelaysToUse(relays, "write");
 		await this.nostrPostEventRepository.postEvent(signedEvent, relaysModels);
@@ -152,13 +155,16 @@ export class NostrEventService {
 		targetPubkey: string,
 		relays: RelayConfig[],
 	): Promise<void> {
-		const publicKey = await this.nos2xRepository.getPublicKey();
+		if (!this.signerAdapter) {
+			throw new Error("Cannot react: User is not authenticated.");
+		}
+		const publicKey = await this.signerAdapter.getPublicKey();
 		const unsignedEvent = this.createUnsignedReactionEvent(
 			publicKey,
 			targetEventId,
 			targetPubkey,
 		);
-		const signedEvent = await this.nos2xRepository.signEvent(unsignedEvent);
+		const signedEvent = await this.signerAdapter.signEvent(unsignedEvent);
 
 		const relaysModels = this.getRelaysToUse(relays, "write");
 		await this.nostrPostEventRepository.postEvent(signedEvent, relaysModels);

@@ -1,23 +1,30 @@
+import type NDK from "@nostr-dev-kit/ndk";
+import { NDKEvent, NDKNip07Signer } from "@nostr-dev-kit/ndk";
 import type {
 	NostrEvent,
 	RelayConfig,
 	RelayMarker,
 	UnsignedEvent,
 } from "../../domain/model/nostr";
-import type { INos2xRepository } from "../../domain/repository/INos2xRepository";
+import type { ISignerAdapter } from "../../domain/repository/ISignerAdapter";
 import { RelayUrl } from "../../domain/valueObject/RelayUrl";
 
-export class Nos2xRepository implements INos2xRepository {
+export class Nip07SignerAdapter implements ISignerAdapter {
+	private signer: NDKNip07Signer;
+	private ndk: NDK;
+
+	constructor(ndk: NDK) {
+		this.signer = new NDKNip07Signer();
+		this.ndk = ndk;
+	}
+
 	async getPublicKey(): Promise<string> {
-		await this.waitLoadingNos2xExtension();
-		if (window.nostr) {
-			return await window.nostr.getPublicKey();
-		}
-		throw new Error("nos2x is not installed.");
+		const user = await this.signer.user();
+		return user.pubkey;
 	}
 
 	public async getLocalRelays(): Promise<RelayConfig[]> {
-		await this.waitLoadingNos2xExtension();
+		await this.waitLoadingExtension();
 
 		if (!window.nostr?.getRelays) {
 			return [];
@@ -44,14 +51,28 @@ export class Nos2xRepository implements INos2xRepository {
 	}
 
 	async signEvent(event: UnsignedEvent): Promise<NostrEvent> {
-		await this.waitLoadingNos2xExtension();
-		if (window.nostr) {
-			return (await window.nostr.signEvent(event)) as NostrEvent;
-		}
-		throw new Error("nos2x is not installed.");
+		const ndkEvent = new NDKEvent(this.ndk);
+		ndkEvent.kind = event.kind;
+		ndkEvent.tags = event.tags;
+		ndkEvent.content = event.content;
+		ndkEvent.created_at = event.created_at;
+		ndkEvent.pubkey = await this.getPublicKey();
+
+		await ndkEvent.sign(this.signer);
+
+		return {
+			kind: ndkEvent.kind as number,
+			tags: ndkEvent.tags,
+			content: ndkEvent.content,
+			created_at: ndkEvent.created_at as number,
+			pubkey: ndkEvent.pubkey,
+			id: ndkEvent.id as string,
+			sig: ndkEvent.sig as string,
+		};
 	}
 
-	private async waitLoadingNos2xExtension(timeoutMs = 1000): Promise<void> {
+	private async waitLoadingExtension(timeoutMs = 1000): Promise<void> {
+		if (typeof window === "undefined") return;
 		if (window.nostr) return;
 		return new Promise((resolve) => {
 			const interval = setInterval(() => {
