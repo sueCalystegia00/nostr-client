@@ -15,11 +15,21 @@ export const useTimeline = () => {
 					const existsIndex = prev.findIndex((e) => e.id === newEvent.id);
 					const newTimeline = [...prev];
 					if (existsIndex >= 0) {
+						// 既存のイベントのプロフィール情報の後追い更新等
 						newTimeline[existsIndex] = newEvent;
 					} else {
-						newTimeline.push(newEvent);
+						// 新規イベントは、既に降順（最新が先頭）ソート済の配列に対して適切な位置へ挿入する
+						// ストリーミングで流れてくる最新イベントは、通常1番目にマッチするため非常に高速
+						const insertIndex = newTimeline.findIndex(
+							(e) => e.created_at < newEvent.created_at,
+						);
+						if (insertIndex === -1) {
+							newTimeline.push(newEvent); // 最も古い場合は末尾に追加
+						} else {
+							newTimeline.splice(insertIndex, 0, newEvent);
+						}
 					}
-					return newTimeline.sort((a, b) => b.created_at - a.created_at);
+					return newTimeline;
 				});
 			});
 		};
