@@ -5,10 +5,10 @@ import { useSwipeGesture } from "../hooks/useSwipeGesture";
 import { EventService } from "../../domain/service/EventService";
 import { useScrollManager } from "../hooks/useScrollManager";
 import type { TabType } from "../../domain/model/ui";
-import type { EnrichedEvent } from "../../domain/model/nostr";
+import type { NostrPost } from "../../domain/model/nostr";
 
 interface Props {
-	timeline: EnrichedEvent[];
+	timeline: NostrPost[];
 	currentTab: TabType;
 	readPostIds: Set<string>;
 	markAsRead: (ids: string[]) => void;
@@ -81,7 +81,7 @@ const PostEventItem = React.memo(
 		event,
 		onAction,
 	}: {
-		event: EnrichedEvent;
+		event: NostrPost;
 		onAction: (msg: string) => void;
 	}) => {
 		const [liked, setLiked] = useState(false);

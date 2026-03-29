@@ -1,5 +1,3 @@
-import type { Event as NostrEvent } from "nostr-tools/pure";
-
 export type PrivateKey = {
 	value: string;
 };
@@ -11,6 +9,24 @@ export type PublicKey = {
 export interface Relay {
 	url: string;
 }
+
+export type NostrEvent = {
+	kind: number;
+	tags: string[][];
+	content: string;
+	created_at: number;
+	pubkey: string;
+	id: string;
+	sig: string;
+};
+
+export type UnsignedEvent = {
+	kind: number;
+	tags: string[][];
+	content: string;
+	created_at: number;
+	pubkey: string;
+};
 
 export type UserProfile = {
 	pubkey: string;
@@ -24,6 +40,6 @@ export type UserProfile = {
 	lud16?: string;
 };
 
-export type EnrichedEvent = NostrEvent & {
+export type NostrPost = NostrEvent & {
 	profile?: UserProfile;
 };

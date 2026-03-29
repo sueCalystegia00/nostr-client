@@ -1,12 +1,12 @@
-import type { EnrichedEvent } from "../model/nostr";
+import type { NostrPost } from "../model/nostr";
 import type { TabType } from "../model/ui";
 
 export class EventService {
 	filterEventsByTab = (
-		events: EnrichedEvent[],
+		events: NostrPost[],
 		tab: TabType,
 		readIds: Set<string>,
-	): EnrichedEvent[] => {
+	): NostrPost[] => {
 		switch (tab) {
 			case "unread":
 				return events.filter((e) => !readIds.has(e.id));
