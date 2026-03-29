@@ -6,9 +6,9 @@ import { RelayUrl } from "../valueObject/RelayUrl";
 export class NostrRelayService {
 	// ブートストラップ（初期探索）用の複数インデクサーリレー
 	private readonly BOOTSTRAP_RELAYS: string[] = [
-		"wss://purplepag.es",
-		"wss://relay.damus.io",
-		"wss://relay.nostr.band",
+		"wss://relay-jp.nostr.wirednet.jp",
+		"wss://relay.nostr.wirednet.jp",
+		"wss://r.kojira.io",
 	];
 
 	private static globalCachedRelays: RelayConfig[] | null = null;
