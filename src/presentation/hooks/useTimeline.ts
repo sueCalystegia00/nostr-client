@@ -1,9 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { NostrPost } from "../../domain/model/nostr";
 import { useDI } from "../context/diContext";
 
+interface TimelineState {
+	byId: Record<string, NostrPost>;
+	orderedIds: string[];
+}
+
 export const useTimeline = () => {
-	const [timeline, setTimeline] = useState<NostrPost[]>([]);
+	const [state, setState] = useState<TimelineState>({
+		byId: {},
+		orderedIds: [],
+	});
 	const { timelineUsecase } = useDI();
 
 	useEffect(() => {
@@ -13,25 +21,39 @@ export const useTimeline = () => {
 		const subscribe = async () => {
 			const cleanup = await timelineUsecase.subscribeTimeline((newEvent) => {
 				if (!isMounted) return;
-				setTimeline((prev) => {
-					const existsIndex = prev.findIndex((e) => e.id === newEvent.id);
-					const newTimeline = [...prev];
-					if (existsIndex >= 0) {
-						// 既存のイベントのプロフィール情報の後追い更新等
-						newTimeline[existsIndex] = newEvent;
-					} else {
-						// 新規イベントは、既に降順（最新が先頭）ソート済の配列に対して適切な位置へ挿入する
-						// ストリーミングで流れてくる最新イベントは、通常1番目にマッチするため非常に高速
-						const insertIndex = newTimeline.findIndex(
-							(e) => e.created_at < newEvent.created_at,
-						);
-						if (insertIndex === -1) {
-							newTimeline.push(newEvent); // 最も古い場合は末尾に追加
+				setState((prev) => {
+					const isExisting = Boolean(prev.byId[newEvent.id]);
+					if (isExisting) {
+						// 既存のイベントのプロフィール情報の後追い更新等: O(1)
+						return {
+							...prev,
+							byId: { ...prev.byId, [newEvent.id]: newEvent },
+						};
+					}
+
+					// 新規イベントは、既に降順（最新が先頭）ソート済のリストに対して適切な位置へ挿入する
+					// ストリーミングで流れてくる最新イベントは二分探索で高速に挿入位置（通常は先頭位置0）に決定される
+					const newOrderedIds = [...prev.orderedIds];
+					let low = 0;
+					let high = newOrderedIds.length - 1;
+
+					while (low <= high) {
+						const mid = Math.floor(low + (high - low) / 2);
+						const midEvent = prev.byId[newOrderedIds[mid]];
+						// 降順ソート
+						if (midEvent.created_at < newEvent.created_at) {
+							high = mid - 1;
 						} else {
-							newTimeline.splice(insertIndex, 0, newEvent);
+							low = mid + 1;
 						}
 					}
-					return newTimeline;
+
+					newOrderedIds.splice(low, 0, newEvent.id);
+
+					return {
+						byId: { ...prev.byId, [newEvent.id]: newEvent },
+						orderedIds: newOrderedIds,
+					};
 				});
 			});
 
@@ -51,6 +73,10 @@ export const useTimeline = () => {
 			}
 		};
 	}, [timelineUsecase]);
+
+	const timeline = useMemo(() => {
+		return state.orderedIds.map((id) => state.byId[id]);
+	}, [state]);
 
 	return { timeline };
 };
