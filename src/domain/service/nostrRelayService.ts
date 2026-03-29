@@ -13,6 +13,11 @@ export class NostrRelayService {
 
 	private nos2xRepository: Nos2xRepository;
 	private nostrRelayRepository: NostrRelayRepository;
+	private static globalCachedRelays: RelayConfig[] | null = null;
+
+	public static clearCache(): void {
+		NostrRelayService.globalCachedRelays = null;
+	}
 
 	constructor() {
 		this.nos2xRepository = new Nos2xRepository();
@@ -20,15 +25,22 @@ export class NostrRelayService {
 	}
 
 	public async resolveCurrentUserRelays(): Promise<RelayConfig[]> {
+		if (NostrRelayService.globalCachedRelays) {
+			return NostrRelayService.globalCachedRelays;
+		}
+
 		// 1. カレントユーザーの場合は、まずローカルのNIP-07プロバイダから複数リレーの設定を取得
 		const localRelays = await this.nos2xRepository.getLocalRelays();
 		if (localRelays && localRelays.length > 0) {
+			NostrRelayService.globalCachedRelays = localRelays;
 			return localRelays;
 		}
 
 		const usersPubkey = await this.nos2xRepository.getPublicKey();
 		// 2. ローカルに複数リレーの設定がない場合は、公開鍵を用いてネットワーク検索
-		return await this.resolveUserRelays(usersPubkey);
+		const relays = await this.resolveUserRelays(usersPubkey);
+		NostrRelayService.globalCachedRelays = relays;
+		return relays;
 	}
 
 	private async resolveUserRelays(pubkey: string): Promise<RelayConfig[]> {
