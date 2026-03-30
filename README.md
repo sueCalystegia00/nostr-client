@@ -9,7 +9,7 @@
 - **フロントエンド:** React 19 (TypeScript)
 - **状態管理:** Zustand (認証システム等に利用)
 - **UIライブラリ:** Material UI (MUI) v7, Emotion (カスタムスタイリング)
-- **Nostr連携:** nostr-tools, nostr-wasm (抽象プールとWASMサポート)
+- **Nostr連携:** @nostr-dev-kit/ndk, @nostr-dev-kit/react, nostr-tools, nostr-wasm (抽象プールとWASMサポート)
 - **ビルドシステム:** Vite 8
 - **ツール:** Biome (リンティング・フォーマット処理用)
 - **パッケージ管理:** pnpm
@@ -19,48 +19,61 @@
 ビジネスロジックを外部の依存関係から切り離すため、クリーンアーキテクチャに基づく**レイヤードアーキテクチャ**を採用しています。
 
 ```mermaid
-flowchart TD
-    subgraph Presentation["Presentation Layer (src/presentation)"]
-        Components["React Components\n(Timeline, PostForm, etc.)"]
-        Hooks["React Hooks\n(useTimeline, useReadReceipts)"]
-        DI["DI Context\n(diContext.tsx)"]
+graph TD
+    subgraph Presentation["Presentation Layer (UI & State)"]
+        Components["React Components\n(AppHeader, Timeline)"]
+        Hooks["Custom Hooks\n(useTimelineController, usePostController)"]
+        State["Zustand\n(useAuthStore)"]
     end
 
-    subgraph Application["Application Layer (src/application)"]
+    subgraph Application["Application Layer (Use Cases)"]
         Usecases["Usecases\n(TimelineUsecase, PostUsecase)"]
     end
 
-    subgraph Domain["Domain Layer (src/domain)"]
-        Models["Domain Models\n(NostrPost, UserProfile)"]
-        Services["Domain Services\n(NostrEventService)"]
-        Interfaces["Repository Interfaces\n(INos2xRepository, etc.)"]
+    subgraph Domain["Domain Layer (Business Rules)"]
+        Models["Models\n(NostrEvent, RelayConfig)"]
+        Services["Domain Services\n(NostrEventService, NostrRelayService)"]
+        Interfaces["Repository Interfaces\n(INostrPostEventRepository, ISignerAdapter)"]
     end
 
-    subgraph Infrastructure["Infrastructure Layer (src/infrastructure)"]
-        NostrLogic["Nostr Logic\n(NostrGateway, NostrPostEventRepository)"]
-        Extension["Extension Integration\n(Nos2xRepository)"]
+    subgraph Infrastructure["Infrastructure Layer (External API)"]
+        NDK["NDK / nostr-tools"]
+        Impl["Repository Implementations\n(NdkEventRepository, NostrRelayRepository)"]
+        Signer["Signer Adapters\n(Nip07SignerAdapter, PrivateKeySignerAdapter)"]
     end
 
-    Presentation -->|利用| Application
-    Application -->|依存| Domain
-    Infrastructure -.->|インターフェース実装| Domain
+    Components --> Hooks
+    Hooks --> State
+    Hooks --> Usecases
+    Usecases --> Services
+    Services --> Interfaces
+    Impl -.->|Implements| Interfaces
+    Signer -.->|Implements| Interfaces
+    Impl --> NDK
+    Signer --> NDK
 
 ```
 
 ### 各層の役割
 
-- Domain Layer (src/domain): コアとなるビジネスロジック、データ構造（エンティティ）、リポジトリのインターフェース、ドメインサービスを格納します。
-- Application Layer (src/application): アプリケーション固有のビジネスルール（ユースケース）の調整を行います。
-- Infrastructure Layer (src/infrastructure): Nostrリレーとの通信やブラウザ拡張機能の統合など、外部システムの実装詳細を担います。
-- Presentation Layer (src/presentation): ユーザーインターフェース、状態管理（Zustand、React Hooks）、および依存性の注入（DIコンテキスト）を担当します。
+​- Presentation Layer: UIコンポーネントの描画、カスタムフックを通じた操作のハンドリング、およびZustandによる状態管理を担当します。
+- ​Application Layer: ユーザーの操作に対するユースケース（タイムラインの取得や投稿など）の進行を管理し、ドメイン層のサービスを呼び出します。
+- ​Domain Layer: アプリケーションのコアとなるエンティティやビジネスルール、およびインフラストラクチャ層が実装すべきインターフェースを定義します。
+- ​Infrastructure Layer: nostr-tools や NDK を用いたNostrリレーとの実際の通信、NIP-07ブラウザ拡張機能との連携など、具体的な技術実装を担当します。
 
 ### 📁 主要なファイル構成 (Key Files)
 
-- src/main.tsx: アプリケーションのエントリーポイント。Wasmを初期化し、AppをDIProviderでラップします。
-- src/App.tsx: グローバル状態とレイアウトを管理するルートコンポーネントです。
-- src/presentation/context/diContext.tsx: リポジトリ、サービス、ユースケースを構成するDIコンテナです。
-- src/infrastructure/nostr/nostrPostEventRepository.ts: nostr-toolsを介してNostrリレーでのイベント購読・公開を行うメインロジックです。
-- src/domain/service/nostrEventService.ts: インフラ層へ送信する前の、投稿やリアクションに関するドメインロジックを処理します。
+```
+src/
+├── application/     # ユースケースクラスの実装
+├── domain/          # エンティティ、ドメインサービス、リポジトリインターフェース
+├── infrastructure/  # Nostr通信ロジックや署名アダプターの具体的な実装
+├── presentation/    # Reactコンポーネント、Hooks、状態管理
+├── App.tsx          # グローバル状態・レイアウトを管理するルート
+├── main.tsx         # エントリーポイント（Wasm初期化等）
+└── style.css        # グローバルスタイル
+
+```
 
 ### 🔑 開発の決まり事と必須要件 (Conventions & Requirements)
 
