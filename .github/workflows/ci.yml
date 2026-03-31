@@ -2,7 +2,11 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    paths-ignore:
+      - "**.md"
+      - ".gitignore"
+      - "LICENSE"
+      - ".github/workflows/deploy.yml"
   pull_request:
     branches: [main]
 
