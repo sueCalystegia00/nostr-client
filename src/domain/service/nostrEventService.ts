@@ -6,8 +6,8 @@ import type {
 	UnsignedEvent,
 	UserProfile,
 } from "../model/nostr";
-import type { ISignerAdapter } from "../repository/ISignerAdapter";
 import type { INostrPostEventRepository } from "../repository/INostrPostEventRepository";
+import type { ISignerAdapter } from "../repository/ISignerAdapter";
 
 export class NostrEventService {
 	private signerAdapter: ISignerAdapter | null;

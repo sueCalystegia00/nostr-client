@@ -57,13 +57,10 @@ export class NdkEventRepository implements INostrPostEventRepository {
 		onEvent: (event: NostrEvent) => void,
 	): () => void {
 		const filter = { kinds: [1], limit: 100 };
-		const sub = this.ndk.subscribe(
-			filter,
-			{
-				closeOnEose: false,
-				relaySet: this.getRelaySet(relays)
-			}
-		);
+		const sub = this.ndk.subscribe(filter, {
+			closeOnEose: false,
+			relaySet: this.getRelaySet(relays),
+		});
 
 		sub.on("event", (event: NDKEvent) => {
 			onEvent(this.toNostrEvent(event));
