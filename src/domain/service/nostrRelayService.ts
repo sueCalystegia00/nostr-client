@@ -1,6 +1,6 @@
 import type { RelayConfig } from "../model/nostr";
-import type { ISignerAdapter } from "../repository/ISignerAdapter";
 import type { INostrRelayRepository } from "../repository/INostrRelayRepository";
+import type { ISignerAdapter } from "../repository/ISignerAdapter";
 import { RelayUrl } from "../valueObject/RelayUrl";
 
 export class NostrRelayService {

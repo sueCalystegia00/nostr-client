@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - ".gitignore"
+      - "LICENSE"
+      - ".github/workflows/deploy.yml"
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Format check
+        run: pnpm run format:check
+      - name: Lint check
+        run: pnpm run lint:check
+      - name: Type check
+        run: pnpm tsc --noEmit
+      - name: Build
+        run: pnpm run build

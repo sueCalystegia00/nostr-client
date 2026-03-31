@@ -1,4 +1,13 @@
-import { AppBar, Badge, Box, Button, Tab, Tabs, Toolbar, Typography } from "@mui/material";
+import {
+	AppBar,
+	Badge,
+	Box,
+	Button,
+	Tab,
+	Tabs,
+	Toolbar,
+	Typography,
+} from "@mui/material";
 import { Bell, Home, List } from "lucide-react";
 import type { TabType } from "../model/ui";
 
@@ -31,7 +40,11 @@ const AppHeader = ({
 					Logout ({activePubkey?.slice(0, 8)}...)
 				</Button>
 			) : (
-				<Button color="primary" variant="contained" onClick={loginWithExtension}>
+				<Button
+					color="primary"
+					variant="contained"
+					onClick={loginWithExtension}
+				>
 					Login with Extension
 				</Button>
 			)}

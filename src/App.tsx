@@ -8,10 +8,10 @@ import {
 import { useState } from "react";
 import AppHeader from "./presentation/component/AppHeader";
 import { TimelineContainer as Timeline } from "./presentation/component/timeline/TimelineContainer";
+import { useAuthController } from "./presentation/hooks/useAuthController";
 import { useReadReceipts } from "./presentation/hooks/useReadReceipts";
 import { useTimelineController } from "./presentation/hooks/useTimelineController";
 import type { TabType } from "./presentation/model/ui";
-import { useAuthController } from "./presentation/hooks/useAuthController";
 
 // --- MUIテーマ定義 ---
 const theme = createTheme({
@@ -34,7 +34,8 @@ const theme = createTheme({
 
 const App = () => {
 	// 1. データ取得 (Infrastructure層の呼び出し)
-	const { loginWithExtension, logout, isLoggedIn, activePubkey } = useAuthController();
+	const { loginWithExtension, logout, isLoggedIn, activePubkey } =
+		useAuthController();
 	const { timeline } = useTimelineController();
 
 	// 2. 状態・ユースケース管理 (Application層の呼び出し)
