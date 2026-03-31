@@ -6,13 +6,20 @@ import type {
 	UnsignedEvent,
 } from "../../domain/model/nostr";
 import type { ISignerAdapter } from "../../domain/repository/ISignerAdapter";
+import type { PrivateKey } from "../../domain/valueObject/PrivateKey";
 
 export class PrivateKeySignerAdapter implements ISignerAdapter {
 	private signer: NDKPrivateKeySigner;
 	private ndk: NDK;
 
-	constructor(privateKeyHex: string, ndk: NDK) {
-		this.signer = new NDKPrivateKeySigner(privateKeyHex);
+	/**
+	 * PrivateKeySignerAdapterのコンストラクタ
+	 * @param privateKey PrivateKey値オブジェクト
+	 * @param ndk NDKインスタンス
+	 */
+	constructor(privateKey: PrivateKey, ndk: NDK) {
+		const hexKey = privateKey.toHex();
+		this.signer = new NDKPrivateKeySigner(hexKey);
 		this.ndk = ndk;
 	}
 
