@@ -4,6 +4,6 @@ import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
 
 export default defineConfig({
-	base: process.env.VITE_BASE_PATH ?? "/",
+	base: process.env.BASE_PATH ?? "/",
 	plugins: [react(), wasm(), topLevelAwait()],
 });
